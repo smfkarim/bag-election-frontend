@@ -1,0 +1,215 @@
+export const panelACandidates = [
+    {
+        id: 1,
+        name: "Albi Ummid",
+        type: "President",
+        img_url:
+            "https://images.pexels.com/photos/819530/pexels-photo-819530.jpeg",
+    },
+    {
+        id: 2,
+        name: "Tanvir Hassan",
+        type: "Vice-President",
+        img_url:
+            "https://images.pexels.com/photos/819530/pexels-photo-819530.jpeg",
+    },
+    {
+        id: 3,
+        name: "Tonoy Ummid",
+        type: "Co-Vice-President",
+        img_url:
+            "https://images.pexels.com/photos/819530/pexels-photo-819530.jpeg",
+    },
+    {
+        id: 4,
+        name: "Noyon Ahmed",
+        type: "General Secratary",
+        img_url:
+            "https://images.pexels.com/photos/819530/pexels-photo-819530.jpeg",
+    },
+    {
+        id: 5,
+        name: "Micky Rick",
+        type: "Joint Secretory",
+        img_url:
+            "https://images.pexels.com/photos/819530/pexels-photo-819530.jpeg",
+    },
+    {
+        id: 6,
+        name: "Maria Binte Zahid",
+        type: "Finance Secretary",
+        img_url:
+            "https://images.pexels.com/photos/819530/pexels-photo-819530.jpeg",
+    },
+    {
+        id: 7,
+        name: "Sadia Akter",
+        type: "Organizing Secretary",
+        img_url:
+            "https://images.pexels.com/photos/819530/pexels-photo-819530.jpeg",
+    },
+    {
+        id: 8,
+        name: "Tanjum Tashrif",
+        type: "Cultural Secretary",
+        img_url:
+            "https://images.pexels.com/photos/819530/pexels-photo-819530.jpeg",
+    },
+    {
+        id: 9,
+        name: "Suranjon Sarker",
+        type: "Public Relation Secretary",
+        img_url:
+            "https://images.pexels.com/photos/819530/pexels-photo-819530.jpeg",
+    },
+    {
+        id: 10,
+        name: "Adham Abhi",
+        type: "Sports Secretary",
+        img_url:
+            "https://images.pexels.com/photos/819530/pexels-photo-819530.jpeg",
+    },
+    {
+        id: 11,
+        name: "Nayeem Islam",
+        type: "Executive Member",
+        img_url:
+            "https://images.pexels.com/photos/819530/pexels-photo-819530.jpeg",
+    },
+    {
+        id: 12,
+        name: "Asif Hasan",
+        type: "Executive Member",
+        img_url:
+            "https://images.pexels.com/photos/819530/pexels-photo-819530.jpeg",
+    },
+    {
+        id: 25,
+        name: "Tnaviru Hasan",
+        type: "Executive Member",
+        img_url:
+            "https://images.pexels.com/photos/819530/pexels-photo-819530.jpeg",
+    },
+    {
+        id: 26,
+        name: "Mustafiz Hasan",
+        type: "Executive Member",
+        img_url:
+            "https://images.pexels.com/photos/819530/pexels-photo-819530.jpeg",
+    },
+    {
+        id: 27,
+        name: "Hicky Hasan",
+        type: "Executive Member",
+        img_url:
+            "https://images.pexels.com/photos/819530/pexels-photo-819530.jpeg",
+    },
+];
+
+export const panelBCandidates = [
+    {
+        id: 13,
+        name: "Luke Rami",
+        type: "President",
+        img_url:
+            "https://images.pexels.com/photos/819530/pexels-photo-819530.jpeg",
+    },
+    {
+        id: 14,
+        name: "Tony Stark",
+        type: "Vice-President",
+        img_url:
+            "https://images.pexels.com/photos/819530/pexels-photo-819530.jpeg",
+    },
+    {
+        id: 15,
+        name: "Jevi Rick",
+        type: "Co-Vice-President",
+        img_url:
+            "https://images.pexels.com/photos/819530/pexels-photo-819530.jpeg",
+    },
+    {
+        id: 16,
+        name: "Aston McCoy",
+        type: "General Secratary",
+        img_url:
+            "https://images.pexels.com/photos/819530/pexels-photo-819530.jpeg",
+    },
+    {
+        id: 17,
+        name: "Ariene Nilkinn",
+        type: "Joint Secretory",
+        img_url:
+            "https://images.pexels.com/photos/819530/pexels-photo-819530.jpeg",
+    },
+    {
+        id: 18,
+        name: "Aster McCoy",
+        type: "Finance Secretary",
+        img_url:
+            "https://images.pexels.com/photos/819530/pexels-photo-819530.jpeg",
+    },
+    {
+        id: 19,
+        name: "Milly Bobee",
+        type: "Organizing Secretary",
+        img_url:
+            "https://images.pexels.com/photos/819530/pexels-photo-819530.jpeg",
+    },
+    {
+        id: 20,
+        name: "Katty Perry",
+        type: "Cultural Secretary",
+        img_url:
+            "https://images.pexels.com/photos/819530/pexels-photo-819530.jpeg",
+    },
+    {
+        id: 21,
+        name: "Jucy Jr. Alnam",
+        type: "Public Relation Secretary",
+        img_url:
+            "https://images.pexels.com/photos/819530/pexels-photo-819530.jpeg",
+    },
+    {
+        id: 22,
+        name: "Aster Rick",
+        type: "Sports Secretary",
+        img_url:
+            "https://images.pexels.com/photos/819530/pexels-photo-819530.jpeg",
+    },
+    {
+        id: 23,
+        name: "Mili Masll",
+        type: "Executive Member",
+        img_url:
+            "https://images.pexels.com/photos/819530/pexels-photo-819530.jpeg",
+    },
+    {
+        id: 24,
+        name: "Jimmy Sase",
+        type: "Executive Member",
+        img_url:
+            "https://images.pexels.com/photos/819530/pexels-photo-819530.jpeg",
+    },
+    {
+        id: 28,
+        name: "Pick Bras",
+        type: "Executive Member",
+        img_url:
+            "https://images.pexels.com/photos/819530/pexels-photo-819530.jpeg",
+    },
+    {
+        id: 29,
+        name: "Alsf REC",
+        type: "Executive Member",
+        img_url:
+            "https://images.pexels.com/photos/819530/pexels-photo-819530.jpeg",
+    },
+    {
+        id: 30,
+        name: "Biky Sgs",
+        type: "Executive Member",
+        img_url:
+            "https://images.pexels.com/photos/819530/pexels-photo-819530.jpeg",
+    },
+];
