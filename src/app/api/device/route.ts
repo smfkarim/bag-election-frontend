@@ -2,20 +2,20 @@
 import DeviceDetector from "device-detector-js";
 import dns from "dns/promises";
 import macaddress from "macaddress";
-import { headers } from "next/headers"; // ✅ correct place for headers()
-import { userAgent } from "next/server"; // ✅ userAgent still comes from here
+import { headers } from "next/headers";
+import { userAgent } from "next/server";
 import os from "os";
 
 export async function GET(request: Request) {
     // ✅ headers() is now sync in Next 16 when called in a Route Handler
-    const hdrs = await headers();
+    const _headers = await headers();
 
     // 1️⃣ Extract client IP
-    const forwarded = hdrs.get("x-forwarded-for");
+    const forwarded = _headers.get("x-forwarded-for");
     const clientIp = forwarded?.split(",")[0].trim() || "0.0.0.0";
 
     // 2️⃣ Parse UA
-    const uaHeader = hdrs.get("user-agent") ?? "";
+    const uaHeader = _headers.get("user-agent") ?? "";
     const uaParsed = userAgent(request); // optional built-in summary
     const detector = new DeviceDetector();
     const parsedUA = detector.parse(uaHeader);
