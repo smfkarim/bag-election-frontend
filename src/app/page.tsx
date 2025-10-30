@@ -1,3 +1,9 @@
+"use client";
+
 export default function RootPage() {
-    return <div>RootPage</div>;
+    return (
+        <div>
+            <h1>Root page</h1>
+        </div>
+    );
 }
