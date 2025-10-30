@@ -1,13 +1,19 @@
 "use client";
 
 import { Button, Image, Paper, PinInput } from "@mantine/core";
+import { notifications } from "@mantine/notifications";
 import { ComponentRef, useEffect, useRef, useState } from "react";
+import { AiOutlineLock } from "react-icons/ai";
 
 export default function MemberLogin() {
+    const requiredPin = "123456";
+    const [blocked, setBlocked] = useState(false);
     const pin1Ref = useRef<ComponentRef<typeof PinInput>>(null);
     const pin2Ref = useRef<ComponentRef<typeof PinInput>>(null);
     const [pin1, setPin1] = useState("");
     const [pin2, setPin2] = useState("");
+    const pin = pin1 + pin2;
+    const [retryCount, setRetryCount] = useState(0);
 
     useEffect(() => {
         if (pin1.length === 3) {
@@ -33,9 +39,27 @@ export default function MemberLogin() {
         }
     };
 
+    const handleContinue = async () => {
+        if (pin !== requiredPin) {
+            notifications.show({
+                color: "red",
+                title: "Wrong PIN",
+                message: "You have enter wrong pin",
+            });
+            setRetryCount((v) => v + 1);
+            return;
+        }
+    };
+
+    useEffect(() => {
+        if (retryCount === 2) {
+            setBlocked(true);
+        }
+    }, [retryCount]);
+
     return (
-        <Paper shadow="sm" p={40} radius={20} className=" w-fit">
-            <div className=" flex flex-col items-center w-fit space-y-2">
+        <Paper shadow="sm" p={40} radius={20} className="">
+            <div className=" flex flex-col items-center w-fit space-y-2 max-w-[400px]">
                 <div className=" size-20">
                     <Image
                         src={"/bag_logo.png"}
@@ -47,8 +71,22 @@ export default function MemberLogin() {
                 <p className=" text-xl">To</p>
                 <p className=" text-xl">BAG Member System</p>
                 <br />
-                <p className=" text-xl my-5">Input your code here</p>
-                <div className=" flex items-center gap-3">
+                <div>
+                    {blocked ? (
+                        <p className=" text-center  whitespace-pre-line my-5 text-red-500">
+                            {`You have been blocked\n due to wrong input of so many times.
+                             Please contact to the ElectionCommission.`}
+                        </p>
+                    ) : (
+                        <p className=" text-xl my-5">Input your code here</p>
+                    )}
+                </div>
+                <div className=" flex items-center gap-3 relative p-4">
+                    {blocked && (
+                        <div className=" w-full h-full bg-gray-400/80 absolute z-10  left-0 right-0 rounded-lg flex justify-center items-center">
+                            <AiOutlineLock size={40} />
+                        </div>
+                    )}
                     <PinInput
                         size="lg"
                         ref={pin1Ref}
@@ -62,7 +100,13 @@ export default function MemberLogin() {
                                     : "",
                         }}
                     />
-                    <p className=" text-3xl mx-2">-</p>
+                    <p
+                        className={`text-3xl mx-2 ${
+                            blocked ? "opacity-0" : ""
+                        }`}
+                    >
+                        -
+                    </p>
                     <PinInput
                         classNames={{
                             input:
@@ -77,7 +121,14 @@ export default function MemberLogin() {
                         length={3}
                     />
                 </div>
-                <Button size="lg" radius={20} fullWidth mt={20}>
+                <Button
+                    disabled={pin.length !== 6 || blocked}
+                    onClick={handleContinue}
+                    size="lg"
+                    radius={20}
+                    fullWidth
+                    mt={20}
+                >
                     Continue
                 </Button>
             </div>
