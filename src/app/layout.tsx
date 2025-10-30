@@ -5,6 +5,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 
+import { theme } from "@/utils/theme";
 import {
     ColorSchemeScript,
     MantineProvider,
@@ -38,9 +39,9 @@ export default function RootLayout({
                 <ColorSchemeScript />
             </head>
             <body
-                className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+                className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen`}
             >
-                <MantineProvider>
+                <MantineProvider theme={theme}>
                     <Notifications />
                     <ModalsProvider>{children}</ModalsProvider>
                 </MantineProvider>
