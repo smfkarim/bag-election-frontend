@@ -1,11 +1,13 @@
 "use client";
 
-import { Button, Image, Paper, PinInput } from "@mantine/core";
+import { Button, Image, PinInput } from "@mantine/core";
 import { notifications } from "@mantine/notifications";
+import { useRouter } from "next/navigation";
 import { ComponentRef, useEffect, useRef, useState } from "react";
 import { AiOutlineLock } from "react-icons/ai";
 
 export default function MemberLogin() {
+    const router = useRouter();
     const requiredPin = "123456";
     const [blocked, setBlocked] = useState(false);
     const pin1Ref = useRef<ComponentRef<typeof PinInput>>(null);
@@ -49,6 +51,7 @@ export default function MemberLogin() {
             setRetryCount((v) => v + 1);
             return;
         }
+        router.push("/vote");
     };
 
     useEffect(() => {
@@ -58,7 +61,7 @@ export default function MemberLogin() {
     }, [retryCount]);
 
     return (
-        <Paper shadow="sm" p={40} radius={20} className="">
+        <div className=" shadow-2xl shadow-green-800/40 p-10 rounded-2xl ">
             <div className=" flex flex-col items-center w-fit space-y-2 max-w-[400px]">
                 <div className=" size-20">
                     <Image
@@ -132,6 +135,6 @@ export default function MemberLogin() {
                     Continue
                 </Button>
             </div>
-        </Paper>
+        </div>
     );
 }
