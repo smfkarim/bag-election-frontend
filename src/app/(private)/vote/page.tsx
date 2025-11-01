@@ -1,11 +1,7 @@
 "use client";
-import CandidateSelection, {
-    TSelection,
-} from "@/components/pages/candidate-selection";
-import { useState } from "react";
+import CandidateSelection from "@/components/pages/candidate-selection";
 
 export default function VoteScreen() {
-    const [selected, setSelected] = useState<TSelection[]>([]);
     return (
         <div>
             <CandidateSelection />
