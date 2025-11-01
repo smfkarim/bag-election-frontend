@@ -51,6 +51,7 @@ export default function MemberLogin() {
             setRetryCount((v) => v + 1);
             return;
         }
+        // notifications.show({})
         router.push("/vote");
     };
 
@@ -78,7 +79,7 @@ export default function MemberLogin() {
                     {blocked ? (
                         <p className=" text-center  whitespace-pre-line my-5 text-red-500">
                             {`You have been blocked\n due to wrong input of so many times.
-                             Please contact to the ElectionCommission.`}
+                             Please contact to the Election Commission.`}
                         </p>
                     ) : (
                         <p className=" text-xl my-5">Input your code here</p>

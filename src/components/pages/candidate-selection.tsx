@@ -27,8 +27,10 @@ export default function CandidateSelection() {
                 <div className=" size-15">
                     <Image src={"/bag_logo.png"} alt="bag_logo" />
                 </div>
-                <h1 className=" sm:text-3xl font-semibold">
-                    Vote count: {selectedCandidates?.length}
+
+                {/* Ballot Number */}
+                <h1 className=" text-right text-2xl text-green-800 font-semibold">
+                    Ballot Number: {ballotNumber}
                 </h1>
                 <div className=" sm:text-lg">
                     <p className=" text-right">
@@ -38,22 +40,17 @@ export default function CandidateSelection() {
                 </div>
             </div>
 
-            {/* Ballot Number */}
-            <h1 className=" text-right text-2xl text-green-800 font-semibold">
-                Ballot Number: {ballotNumber}
-            </h1>
-
             {/* Panel Options */}
             <div className=" flex items-center gap-10">
-                <PanelSection
-                    candidateList={panelACandidates}
-                    name="A"
-                    color="green"
-                />
                 <PanelSection
                     candidateList={panelBCandidates}
                     name="B"
                     color="red"
+                />
+                <PanelSection
+                    candidateList={panelACandidates}
+                    name="A"
+                    color="green"
                 />
             </div>
             <div className="flex justify-center items-center">
@@ -125,7 +122,7 @@ const CandidateCard = (props: {
                     onSelectedCandidatesChanged(e.target.checked, data)
                 }
             />
-            <div className="size-10 rounded-full">
+            <div className="size-15 rounded-full">
                 <Image
                     src={props.data?.img_url}
                     alt={props.data.name}
