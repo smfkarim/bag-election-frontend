@@ -5,6 +5,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 
+import SessionProvider from "@/components/layout/session-provider";
 import { theme } from "@/utils/theme";
 import {
     ColorSchemeScript,
@@ -41,10 +42,12 @@ export default function RootLayout({
             <body
                 className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen`}
             >
-                <MantineProvider theme={theme}>
-                    <Notifications position="top-center" />
-                    <ModalsProvider>{children}</ModalsProvider>
-                </MantineProvider>
+                <SessionProvider>
+                    <MantineProvider theme={theme}>
+                        <Notifications position="top-center" />
+                        <ModalsProvider>{children}</ModalsProvider>
+                    </MantineProvider>
+                </SessionProvider>
             </body>
         </html>
     );

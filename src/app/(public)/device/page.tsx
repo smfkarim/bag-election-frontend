@@ -1,6 +1,7 @@
 import DeviceInfoPanel from "@/components/pages/device-info-panel";
 
-export default function DeviceScreen() {
+export default async function DeviceScreen() {
+    // const session = await getAuth();
     return (
         <div>
             <DeviceInfoPanel />

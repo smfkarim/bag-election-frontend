@@ -3,11 +3,15 @@ import CenterWrapper from "@/components/layout/center-wrapper";
 import PaperWrapper from "@/components/layout/paper-wrapper";
 import { Button, PasswordInput, TextInput } from "@mantine/core";
 import { useForm } from "@mantine/form";
+import { notifications } from "@mantine/notifications";
+import { signIn } from "next-auth/react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
 import { MdLogin } from "react-icons/md";
 
 export default function PollingAgentLogin() {
+    const [loading, setLoading] = useState(false);
     const router = useRouter();
     const form = useForm({
         initialValues: {
@@ -22,11 +26,26 @@ export default function PollingAgentLogin() {
     });
     const handleLogin = async (values: typeof form.values) => {
         try {
+            setLoading(true);
             // auth action
+            const res = await signIn("credentials", {
+                email: values.email,
+                password: values.password,
+                redirect: false,
+            });
 
-            // redirect
-            router.push("/polling-agent/voter-search");
-        } catch (error) {}
+            if (res?.ok) {
+                router.push("/polling-agent/voter-search");
+            } else {
+                notifications.show({
+                    color: "red",
+                    title: "Failed",
+                    message: JSON.stringify(res?.error),
+                });
+            }
+        } finally {
+            setLoading(false);
+        }
     };
     return (
         <CenterWrapper>
@@ -71,6 +90,7 @@ export default function PollingAgentLogin() {
                                 type="submit"
                                 fullWidth
                                 mt={30}
+                                loading={loading}
                                 rightSection={<MdLogin size={20} />}
                             >
                                 Sign In

@@ -1,6 +1,7 @@
 "use client";
 import CenterWrapper from "@/components/layout/center-wrapper";
 import PaperWrapper from "@/components/layout/paper-wrapper";
+import useAuth from "@/hooks/useAuth";
 import { Button, Select, TextInput } from "@mantine/core";
 import { useForm } from "@mantine/form";
 import Image from "next/image";
@@ -84,8 +85,11 @@ export default function page() {
         },
     ];
 
+    const session = useAuth();
+
     return (
         <CenterWrapper>
+            {JSON.stringify(session, null, 2)}
             <PaperWrapper>
                 <div className=" w-4xl">
                     <form
