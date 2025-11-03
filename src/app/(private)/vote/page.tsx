@@ -1,10 +1,10 @@
 "use client";
-import CandidateSelection from "@/components/pages/candidate-selection";
+import CandidateSelectionView from "@/components/pages/candiate-selection-view";
 
 export default function VoteScreen() {
     return (
         <div>
-            <CandidateSelection />
+            <CandidateSelectionView />
         </div>
     );
 }

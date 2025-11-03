@@ -1,9 +1,12 @@
+"use client";
+
 import { useVoteStore } from "@/app/(private)/vote/vote.store";
 import { panelACandidates, panelBCandidates } from "@/data/candidates";
 import { Button, Checkbox, Image } from "@mantine/core";
 import dayjs from "dayjs";
 import { useRef } from "react";
 import { useReactToPrint } from "react-to-print";
+import CandidateSelectionPrint from "./candiate-selection-print";
 
 export type TCandidate = {
     id: number;
@@ -20,50 +23,67 @@ export type TSelection = {
     panel: string;
 };
 
-export default function CandidateSelection() {
-    const contentRef = useRef<HTMLDivElement>(null);
-    const reactToPrintFn = useReactToPrint({ contentRef });
+export default function CandidateSelectionView() {
+    const printRef = useRef<HTMLDivElement>(null);
+    const reactToPrintFn = useReactToPrint({
+        contentRef: printRef,
+        documentTitle: "Ballot Paper",
+    });
+
     const { ballotNumber, selectedCandidates } = useVoteStore();
+
     return (
-        <div ref={contentRef} className=" m-5 max-w-7xl mx-auto space-y-5">
+        <div className="m-5 max-w-7xl mx-auto space-y-5">
+            {/* Print Button */}
             <Button onClick={reactToPrintFn} color="red">
                 Print
             </Button>
-            {/* Header */}
-            <div className=" flex items-center justify-between px-5 py-2 rounded-2xl bg-green-100 ">
-                <div className=" size-15">
-                    <Image src={"/bag_logo.png"} alt="bag_logo" />
-                </div>
 
-                {/* Ballot Number */}
-                <h1 className=" text-right text-2xl text-green-800 font-semibold">
-                    Ballot Number: {ballotNumber}
-                </h1>
-                <div className=" sm:text-lg">
-                    <p className=" text-right">
-                        {dayjs(new Date()).format("hh:mm A")}
-                    </p>
-                    <p>{dayjs(new Date()).format("DD MMMM, YYYY")}</p>
+            {/* ✅ Keep this div mounted and offscreen (NOT hidden or display:none) */}
+            <div style={{ display: "none" }}>
+                <div ref={printRef}>
+                    <CandidateSelectionPrint />
                 </div>
             </div>
 
-            {/* Panel Options */}
-            <div className=" flex items-center gap-10">
-                <PanelSection
-                    candidateList={panelBCandidates}
-                    name="B"
-                    color="red"
-                />
-                <PanelSection
-                    candidateList={panelACandidates}
-                    name="A"
-                    color="green"
-                />
-            </div>
-            <div className="flex justify-center items-center">
-                <Button radius={10} w={400} size="lg">
-                    Submit
-                </Button>
+            {/* 🧭 Your original UI remains the same */}
+            <div className="space-y-5">
+                {/* Header */}
+                <div className="flex items-center justify-between px-5 py-2 rounded-2xl bg-green-100">
+                    <div className="size-15">
+                        <Image src={"/bag_logo.png"} alt="bag_logo" />
+                    </div>
+
+                    <h1 className="text-right text-2xl text-green-800 font-semibold">
+                        Ballot Number: {ballotNumber}
+                    </h1>
+                    <div className="sm:text-lg">
+                        <p className="text-right">
+                            {dayjs().format("hh:mm A")}
+                        </p>
+                        <p>{dayjs().format("DD MMMM, YYYY")}</p>
+                    </div>
+                </div>
+
+                {/* Panel Options */}
+                <div className="flex items-center gap-10">
+                    <PanelSection
+                        candidateList={panelBCandidates}
+                        name="B"
+                        color="red"
+                    />
+                    <PanelSection
+                        candidateList={panelACandidates}
+                        name="A"
+                        color="green"
+                    />
+                </div>
+
+                <div className="flex justify-center items-center">
+                    <Button radius={10} w={400} size="lg">
+                        Submit
+                    </Button>
+                </div>
             </div>
         </div>
     );
@@ -77,7 +97,7 @@ const PanelSection = (props: {
     return (
         <div className="flex-1 space-y-2 mt-5">
             <div>
-                <h1 className=" text-center text-2xl">Panel {props.name}</h1>
+                <h1 className="text-center text-2xl">Panel {props.name}</h1>
             </div>
             <div
                 className={`p-10 rounded-2xl space-y-3 ${
@@ -117,9 +137,9 @@ const CandidateCard = (props: {
 
     return (
         <div
-            className={`flex gap-5 bg-white items-center border  rounded-xl px-5 py-2 ${
-                checked ? "border-green-800 " : " border-transparent"
-            } ${cardDisable ? " opacity-50 " : " "}`}
+            className={`flex gap-5 bg-white items-center border rounded-xl px-5 py-2 ${
+                checked ? "border-green-800" : "border-transparent"
+            } ${cardDisable ? "opacity-50" : ""}`}
         >
             <Checkbox
                 disabled={cardDisable}
@@ -133,7 +153,7 @@ const CandidateCard = (props: {
                 <Image
                     src={props.data?.img_url}
                     alt={props.data.name}
-                    className=" h-full w-full"
+                    className="h-full w-full"
                 />
             </div>
             <div>
