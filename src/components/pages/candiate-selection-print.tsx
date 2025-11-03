@@ -85,9 +85,9 @@ const PanelPrint = ({
                 {title}
             </h2>
 
-            <table className="w-full border-collapse text-sm flex-1">
-                <thead>
-                    <tr className="border-b border-gray-400 bg-gray-100">
+            <table className="w-full  text-sm flex-1">
+                <thead className=" border-b ">
+                    <tr className="">
                         <th className="p-1 w-6 text-left">#</th>
                         <th className="p-1 text-left">Candidate</th>
                         <th className="p-1 text-left">Type</th>
@@ -98,10 +98,7 @@ const PanelPrint = ({
                     {list.map((c, i) => {
                         const isChecked = !!selected.find((s) => s.id === c.id);
                         return (
-                            <tr
-                                key={c.id}
-                                className="border-b border-gray-300 last:border-none"
-                            >
+                            <tr key={c.id} className=" border-b">
                                 <td className="p-1">{i + 1}</td>
                                 <td className="p-1">{c.name}</td>
                                 <td className="p-1 text-gray-600">{c.type}</td>

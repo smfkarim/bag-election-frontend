@@ -35,12 +35,15 @@ export default function CandidateSelectionView() {
     return (
         <div className="m-5 max-w-7xl mx-auto space-y-5">
             {/* Print Button */}
-            <Button onClick={reactToPrintFn} color="red">
+            <Button
+                onClick={() => setTimeout(() => reactToPrintFn(), 200)}
+                color="red"
+            >
                 Print
             </Button>
 
             {/* ✅ Keep this div mounted and offscreen (NOT hidden or display:none) */}
-            <div style={{ display: "none" }}>
+            <div>
                 <div ref={printRef}>
                     <CandidateSelectionPrint />
                 </div>
