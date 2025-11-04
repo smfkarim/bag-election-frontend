@@ -8,47 +8,47 @@ import "./globals.css";
 import SessionProvider from "@/components/layout/session-provider";
 import { theme } from "@/utils/theme";
 import {
-    ColorSchemeScript,
-    MantineProvider,
-    mantineHtmlProps,
+  ColorSchemeScript,
+  MantineProvider,
+  mantineHtmlProps,
 } from "@mantine/core";
 import { ModalsProvider } from "@mantine/modals";
 import { Notifications } from "@mantine/notifications";
 const geistSans = Geist({
-    variable: "--font-geist-sans",
-    subsets: ["latin"],
+  variable: "--font-geist-sans",
+  subsets: ["latin"],
 });
 
 const geistMono = Geist_Mono({
-    variable: "--font-geist-mono",
-    subsets: ["latin"],
+  variable: "--font-geist-mono",
+  subsets: ["latin"],
 });
 
 export const metadata: Metadata = {
-    title: "BAG Election",
-    description: "Bangladesh Association Georgia Election",
+  title: "BAG Election",
+  description: "Bangladesh Association Georgia Election",
 };
 
 export default function RootLayout({
-    children,
+  children,
 }: Readonly<{
-    children: React.ReactNode;
+  children: React.ReactNode;
 }>) {
-    return (
-        <html lang="en" {...mantineHtmlProps}>
-            <head>
-                <ColorSchemeScript />
-            </head>
-            <body
-                className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen`}
-            >
-                <SessionProvider>
-                    <MantineProvider theme={theme} forceColorScheme="light">
-                        <Notifications position="top-center" />
-                        <ModalsProvider>{children}</ModalsProvider>
-                    </MantineProvider>
-                </SessionProvider>
-            </body>
-        </html>
-    );
+  return (
+    <html lang="en" {...mantineHtmlProps}>
+      <head>
+        <ColorSchemeScript />
+      </head>
+      <body
+        className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen`}
+      >
+        <SessionProvider>
+          <MantineProvider theme={theme} forceColorScheme="light">
+            <Notifications position="top-center" />
+            <ModalsProvider>{children}</ModalsProvider>
+          </MantineProvider>
+        </SessionProvider>
+      </body>
+    </html>
+  );
 }

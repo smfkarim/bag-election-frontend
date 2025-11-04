@@ -1,3 +1,4 @@
+import { PermissionEnum, RoleEnum } from "@/constants/auth.constant";
 import NextAuth, { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 
@@ -45,8 +46,8 @@ export const authOptions: NextAuthOptions = {
         async jwt({ token, user }) {
             if (user) {
                 token.accessToken = user?.accessToken;
-                token.role = user.role;
-                token.permissions = user.permissions;
+                token.role = user.role as RoleEnum;
+                token.permissions = user.permissions as PermissionEnum[];
             }
             return token;
         },

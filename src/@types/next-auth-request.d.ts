@@ -6,5 +6,5 @@ export type AuthType = Awaited<ReturnType<typeof auth>>;
 
 // Extend NextRequest to include it
 export interface AuthRequest extends NextRequest {
-    auth: AuthType;
+  auth: AuthType;
 }

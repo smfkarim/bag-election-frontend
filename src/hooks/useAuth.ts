@@ -11,7 +11,7 @@ export default function useAuth() {
         requiredRoles?: RoleEnum[]
     ) {
         let authorized = true;
-        authorized = requiredPermissions?.every((x: string) =>
+        authorized = requiredPermissions?.every((x) =>
             permissions?.includes(x)
         );
         if (requiredRoles) {
