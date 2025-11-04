@@ -4,15 +4,21 @@
     --background: #ffffff;
     --foreground: #171717;
     --primary: #1e864b;
-    color-scheme: light only;
+}
+
+@media (prefers-color-scheme: dark) {
+    :root {
+        --foreground: #0a0a0a;
+        --background: #ededed;
+    }
 }
 
 /* Prevent any dark mode styles from applying */
-@media (prefers-color-scheme: dark) {
+/* @media (prefers-color-scheme: dark) {
     * {
         color-scheme: light !important;
     }
-}
+} */
 
 @theme inline {
     /* Colors */
@@ -23,13 +29,6 @@
     /* Fonts */
     --font-sans: var(--font-geist-sans);
     --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-    :root {
-        --background: #0a0a0a;
-        --foreground: #ededed;
-    }
 }
 
 body {

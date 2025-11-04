@@ -43,7 +43,7 @@ export default function RootLayout({
                 className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen`}
             >
                 <SessionProvider>
-                    <MantineProvider theme={theme}>
+                    <MantineProvider theme={theme} forceColorScheme="light">
                         <Notifications position="top-center" />
                         <ModalsProvider>{children}</ModalsProvider>
                     </MantineProvider>
