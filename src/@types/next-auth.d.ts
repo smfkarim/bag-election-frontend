@@ -1,3 +1,4 @@
+import { PermissionEnum, RoleEnum } from "@/constants/auth.constant";
 import { DefaultSession, DefaultUser } from "next-auth";
 import "next-auth/jwt";
 
@@ -8,8 +9,8 @@ declare module "next-auth" {
             name?: string | null;
             email?: string | null;
             accessToken?: string;
-            role?: string;
-            permissions?: string[];
+            role?: RoleEnum;
+            permissions?: PermissionEnum[];
         } & DefaultSession["user"];
     }
 
@@ -24,7 +25,7 @@ declare module "next-auth" {
 declare module "next-auth/jwt" {
     interface JWT {
         accessToken?: string;
-        role?: string;
-        permissions?: string[];
+        role?: RoleEnum;
+        permissions?: PermissionEnum[];
     }
 }

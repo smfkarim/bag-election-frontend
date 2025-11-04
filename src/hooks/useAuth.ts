@@ -1,3 +1,4 @@
+import { PermissionEnum, RoleEnum } from "@/constants/auth.constant";
 import { useSession } from "next-auth/react";
 
 export default function useAuth() {
@@ -6,8 +7,8 @@ export default function useAuth() {
     const permissions = data?.user?.permissions;
 
     function hasAccess(
-        requiredPermissions: string[],
-        requiredRoles?: string[]
+        requiredPermissions: PermissionEnum[],
+        requiredRoles?: RoleEnum[]
     ) {
         let authorized = true;
         authorized = requiredPermissions?.every((x: string) =>

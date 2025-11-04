@@ -35,7 +35,7 @@ export default function PollingAgentLogin() {
             });
 
             if (res?.ok) {
-                router.push("/polling-agent/voter-search");
+                router.push("/polling-agent/voter");
             } else {
                 notifications.show({
                     color: "red",

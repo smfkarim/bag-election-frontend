@@ -1,6 +1,6 @@
 "use client";
 
-import { useVoteStore } from "@/app/(private)/vote/vote.store";
+import { useVoteStore } from "@/app/(private)/election/vote/vote.store";
 import { panelACandidates, panelBCandidates } from "@/data/candidates";
 import { Image } from "@mantine/core";
 import dayjs from "dayjs";
@@ -16,11 +16,11 @@ export default function CandidateSelectionPrint() {
                 height: "297mm", // ✅ exact A4 height
                 boxSizing: "border-box",
                 fontFamily: "Arial, sans-serif",
-                pageBreakAfter: "always",
+                // pageBreakAfter: "always",
             }}
         >
             {/* HEADER */}
-            <header className="flex items-center justify-between border-b pb-3 mb-4 flex-shrink-0">
+            <header className="flex items-center justify-between border-b pb-3 mb-4 shrink-0">
                 <div className="w-20">
                     <Image src="/bag_logo.png" alt="bag_logo" />
                 </div>
@@ -57,7 +57,7 @@ export default function CandidateSelectionPrint() {
             </main>
 
             {/* FOOTER */}
-            <footer className="text-center text-xs text-gray-500 pt-3 flex-shrink-0">
+            <footer className="text-center text-xs text-gray-500 pt-3 shrink-0">
                 <p>Printed by BAG Voting System</p>
             </footer>
         </div>

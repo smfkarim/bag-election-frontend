@@ -1,5 +1,11 @@
 import NextAuth, { getServerSession, NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
+import {
+    PermissionEnum,
+    permissionList,
+    RoleEnum,
+    roleList,
+} from "./../../../../constants/auth.constant";
 
 export const authOptions: NextAuthOptions = {
     providers: [
@@ -39,6 +45,9 @@ export const authOptions: NextAuthOptions = {
         }),
     ],
 
+    pages: {
+        signIn: "/auth/polling-agent",
+    },
     session: {
         strategy: "jwt",
     },
@@ -47,8 +56,8 @@ export const authOptions: NextAuthOptions = {
         async jwt({ token, user }) {
             if (user) {
                 token.accessToken = user?.accessToken;
-                token.role = user.role;
-                token.permissions = user.permissions;
+                token.role = user.role as RoleEnum;
+                token.permissions = user.permissions as PermissionEnum[];
             }
             return token;
         },
@@ -56,8 +65,9 @@ export const authOptions: NextAuthOptions = {
             session.user = {
                 ...session.user,
                 accessToken: token.accessToken,
-                role: token.role,
-                permissions: token.permissions,
+                role: token.role as (typeof roleList)[number],
+                permissions:
+                    token.permissions as (typeof permissionList)[number][],
             };
             return session;
         },

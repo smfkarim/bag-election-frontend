@@ -1,12 +1,11 @@
 "use client";
 
-import { useVoteStore } from "@/app/(private)/vote/vote.store";
+import { useVoteStore } from "@/app/(private)/election/vote/vote.store";
 import { panelACandidates, panelBCandidates } from "@/data/candidates";
 import { Button, Checkbox, Image } from "@mantine/core";
+import { modals } from "@mantine/modals";
 import dayjs from "dayjs";
-import { useRef } from "react";
-import { useReactToPrint } from "react-to-print";
-import CandidateSelectionPrint from "./candiate-selection-print";
+import { useRouter } from "next/navigation";
 
 export type TCandidate = {
     id: number;
@@ -24,30 +23,13 @@ export type TSelection = {
 };
 
 export default function CandidateSelectionView() {
-    const printRef = useRef<HTMLDivElement>(null);
-    const reactToPrintFn = useReactToPrint({
-        contentRef: printRef,
-        documentTitle: "Ballot Paper",
-    });
+    const router = useRouter();
 
-    const { ballotNumber, selectedCandidates } = useVoteStore();
+    const { ballotNumber } = useVoteStore();
 
     return (
         <div className="m-5 max-w-7xl mx-auto space-y-5">
             {/* Print Button */}
-            <Button
-                onClick={() => setTimeout(() => reactToPrintFn(), 200)}
-                color="red"
-            >
-                Print
-            </Button>
-
-            {/* ✅ Keep this div mounted and offscreen (NOT hidden or display:none) */}
-            <div>
-                <div ref={printRef}>
-                    <CandidateSelectionPrint />
-                </div>
-            </div>
 
             {/* 🧭 Your original UI remains the same */}
             <div className="space-y-5">
@@ -83,7 +65,49 @@ export default function CandidateSelectionView() {
                 </div>
 
                 <div className="flex justify-center items-center">
-                    <Button radius={10} w={400} size="lg">
+                    <Button
+                        onClick={() => {
+                            modals.open({
+                                closeOnClickOutside: false,
+                                withCloseButton: false,
+                                centered: true,
+                                size: "300px",
+                                children: (
+                                    <div className=" flex flex-col items-center space-y-3">
+                                        <p className=" text-center p-5 ">
+                                            Are you sure to confirm the vote and
+                                            print the Ballot Paper ?
+                                        </p>
+
+                                        <div className=" flex items-center gap-5">
+                                            <Button
+                                                variant="outline"
+                                                color="red"
+                                                onClick={() => {
+                                                    modals.closeAll();
+                                                }}
+                                            >
+                                                Cancel
+                                            </Button>
+                                            <Button
+                                                onClick={() => {
+                                                    modals.closeAll();
+                                                    router.push(
+                                                        "/election/vote/summary"
+                                                    );
+                                                }}
+                                            >
+                                                Confirm
+                                            </Button>
+                                        </div>
+                                    </div>
+                                ),
+                            });
+                        }}
+                        radius={10}
+                        w={400}
+                        size="lg"
+                    >
                         Submit
                     </Button>
                 </div>

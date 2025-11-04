@@ -1,4 +1,4 @@
-import { useVoteStore } from "@/app/(private)/vote/vote.store";
+import { useVoteStore } from "@/app/(private)/election/vote/vote.store";
 import { panelACandidates, panelBCandidates } from "@/data/candidates";
 import { Button, Checkbox, Image } from "@mantine/core";
 import dayjs from "dayjs";

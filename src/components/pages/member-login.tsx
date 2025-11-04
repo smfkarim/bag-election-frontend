@@ -6,6 +6,8 @@ import { useRouter } from "next/navigation";
 import { ComponentRef, useEffect, useRef, useState } from "react";
 import { AiOutlineLock } from "react-icons/ai";
 
+import cookie from "js-cookie";
+
 export default function MemberLogin() {
     const router = useRouter();
     const requiredPin = "123456";
@@ -18,7 +20,7 @@ export default function MemberLogin() {
     const [retryCount, setRetryCount] = useState(0);
 
     useEffect(() => {
-        if (pin1.length === 3) {
+        if (pin1.length === 3 && pin2.length === 0) {
             pin2Ref?.current?.focus();
         }
     }, [pin1]);
@@ -52,7 +54,10 @@ export default function MemberLogin() {
             return;
         }
         // notifications.show({})
-        router.push("/vote");
+
+        console.log(cookie.get("isVoter"));
+        cookie.set("isVoter", "1");
+        router.push("/election/vote");
     };
 
     useEffect(() => {
@@ -126,6 +131,7 @@ export default function MemberLogin() {
                     />
                 </div>
                 <Button
+                    type="submit"
                     disabled={pin.length !== 6 || blocked}
                     onClick={handleContinue}
                     size="lg"
