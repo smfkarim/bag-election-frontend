@@ -1,7 +1,7 @@
-import { withAuth } from "next-auth/middleware";
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
-import { RoleEnum } from "./constants/auth.constant";
+import { withAuth } from "next-auth/middleware";
+import type { RoleEnum } from "./constants/auth.constant";
 
 /**
  * This middleware runs before protected routes.
@@ -28,7 +28,7 @@ export default withAuth(
     // authorization
     const { role } = req.nextauth.token;
 
-    let roleBasedRouteMap: Record<RoleEnum, string[]> = {
+    const roleBasedRouteMap: Record<RoleEnum, string[]> = {
       "Poll Officer": ["/polling-agent/vote"],
       "Super Admin": [],
       "Election Commission": [],

@@ -1,11 +1,11 @@
 "use client";
 
-import { useVoteStore } from "@/app/(private)/election/vote/vote.store";
-import { panelACandidates, panelBCandidates } from "@/data/candidates";
 import { Button, Checkbox, Image } from "@mantine/core";
 import { modals } from "@mantine/modals";
 import dayjs from "dayjs";
 import { useRouter } from "next/navigation";
+import { useVoteStore } from "@/app/(private)/election/vote/vote.store";
+import { panelACandidates, panelBCandidates } from "@/data/candidates";
 
 export type TCandidate = {
   id: number;

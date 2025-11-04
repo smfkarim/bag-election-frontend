@@ -1,8 +1,8 @@
 // app/components/DeviceInfoPanel.tsx
 "use client";
 
-import { useFullDeviceInfo } from "@/hooks/useFullDeviceInfo";
 import * as React from "react";
+import { useFullDeviceInfo } from "@/hooks/useFullDeviceInfo";
 
 type Props = {
   title?: string;

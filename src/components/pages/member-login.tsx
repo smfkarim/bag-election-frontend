@@ -2,11 +2,10 @@
 
 import { Button, Image, PinInput } from "@mantine/core";
 import { notifications } from "@mantine/notifications";
-import { useRouter } from "next/navigation";
-import { ComponentRef, useEffect, useRef, useState } from "react";
-import { AiOutlineLock } from "react-icons/ai";
-
 import cookie from "js-cookie";
+import { useRouter } from "next/navigation";
+import { type ComponentRef, useEffect, useRef, useState } from "react";
+import { AiOutlineLock } from "react-icons/ai";
 
 export default function MemberLogin() {
   const router = useRouter();

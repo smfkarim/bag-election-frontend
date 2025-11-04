@@ -5,8 +5,6 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 
-import SessionProvider from "@/components/layout/session-provider";
-import { theme } from "@/utils/theme";
 import {
   ColorSchemeScript,
   MantineProvider,
@@ -14,6 +12,9 @@ import {
 } from "@mantine/core";
 import { ModalsProvider } from "@mantine/modals";
 import { Notifications } from "@mantine/notifications";
+import SessionProvider from "@/components/layout/session-provider";
+import { theme } from "@/utils/theme";
+
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],

@@ -1,9 +1,9 @@
 "use client";
 
-import { useVoteStore } from "@/app/(private)/election/vote/vote.store";
-import { panelACandidates, panelBCandidates } from "@/data/candidates";
 import { Image } from "@mantine/core";
 import dayjs from "dayjs";
+import { useVoteStore } from "@/app/(private)/election/vote/vote.store";
+import { panelACandidates, panelBCandidates } from "@/data/candidates";
 
 export default function CandidateSelectionPrint() {
   const { ballotNumber, selectedCandidates } = useVoteStore();

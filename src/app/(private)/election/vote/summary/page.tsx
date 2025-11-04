@@ -1,7 +1,7 @@
 "use client";
-import CandidateSelectionPrint from "@/components/pages/candiate-selection-print";
 import { useEffect, useRef } from "react";
 import { useReactToPrint } from "react-to-print";
+import CandidateSelectionPrint from "@/components/pages/candiate-selection-print";
 
 export default function VoteSummary() {
   const printRef = useRef<HTMLDivElement>(null);

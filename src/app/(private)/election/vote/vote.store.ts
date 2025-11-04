@@ -1,5 +1,6 @@
-import { TSelection } from "@/components/pages/candidate-selection";
 import { create } from "zustand";
+import type { TSelection } from "@/components/pages/candidate-selection";
+
 interface TVoteStore {
   ballotNumber: string;
   selectedCandidates: TSelection[];

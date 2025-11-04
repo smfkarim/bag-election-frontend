@@ -1,9 +1,5 @@
 "use client";
 
-import CenterWrapper from "@/components/layout/center-wrapper";
-import Header from "@/components/layout/header";
-import PaperWrapper from "@/components/layout/paper-wrapper";
-import useAuth from "@/hooks/useAuth";
 import { Button, Select, TextInput } from "@mantine/core";
 import { useForm } from "@mantine/form";
 import Image from "next/image";
@@ -11,6 +7,10 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { FiSearch } from "react-icons/fi";
 import { MdOutlinePersonOff } from "react-icons/md";
+import CenterWrapper from "@/components/layout/center-wrapper";
+import Header from "@/components/layout/header";
+import PaperWrapper from "@/components/layout/paper-wrapper";
+import useAuth from "@/hooks/useAuth";
 
 export default function Page() {
   const [searched, setSearched] = useState(false);

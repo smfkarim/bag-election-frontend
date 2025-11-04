@@ -1,9 +1,9 @@
-import { useVoteStore } from "@/app/(private)/election/vote/vote.store";
-import { panelACandidates, panelBCandidates } from "@/data/candidates";
 import { Button, Checkbox, Image } from "@mantine/core";
 import dayjs from "dayjs";
 import { useRef } from "react";
 import { useReactToPrint } from "react-to-print";
+import { useVoteStore } from "@/app/(private)/election/vote/vote.store";
+import { panelACandidates, panelBCandidates } from "@/data/candidates";
 
 export type TCandidate = {
   id: number;

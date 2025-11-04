@@ -1,5 +1,4 @@
 "use client";
-import CandidateSelectionPrint from "@/components/pages/candiate-selection-print";
 import { Button, Image } from "@mantine/core";
 import { modals } from "@mantine/modals";
 import { notifications } from "@mantine/notifications";
@@ -9,6 +8,7 @@ import { useRef, useState } from "react";
 import { AiOutlineKey, AiOutlinePrinter, AiOutlineSend } from "react-icons/ai";
 import { MdArrowBackIosNew } from "react-icons/md";
 import { useReactToPrint } from "react-to-print";
+import CandidateSelectionPrint from "@/components/pages/candiate-selection-print";
 
 export default function VoterDetails() {
   const [ballotPrinted, setBallotPrinted] = useState(false);

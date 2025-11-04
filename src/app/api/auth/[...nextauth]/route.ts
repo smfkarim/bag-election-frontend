@@ -1,6 +1,6 @@
-import NextAuth, { getServerSession, NextAuthOptions } from "next-auth";
+import NextAuth, { getServerSession, type NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
-import {
+import type {
   PermissionEnum,
   permissionList,
   RoleEnum,
