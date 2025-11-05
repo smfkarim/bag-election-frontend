@@ -1,245 +1,252 @@
 "use client";
 
-import { Button, Select, TextInput } from "@mantine/core";
+import CenterWrapper from "@/components/layout/center-wrapper";
+import Header from "@/components/layout/header";
+import PaperWrapper from "@/components/layout/paper-wrapper";
+import { useVoterSearchQuery } from "@/services/api/voter.api";
+import { useVoterStore } from "@/store/voter-store";
+import { Button, Loader, Select, TextInput } from "@mantine/core";
 import { useForm } from "@mantine/form";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { FiSearch } from "react-icons/fi";
 import { MdOutlinePersonOff } from "react-icons/md";
-import CenterWrapper from "@/components/layout/center-wrapper";
-import Header from "@/components/layout/header";
-import PaperWrapper from "@/components/layout/paper-wrapper";
-import useAuth from "@/hooks/useAuth";
+
+type TRow = {
+    voter_id: string;
+    first_name: string;
+    last_name: string;
+    email: string;
+    phone: string;
+};
+
+type SearchMethod =
+    | "national_id"
+    | "email"
+    | "phone"
+    | "first_name"
+    | "last_name";
 
 export default function Page() {
-  const [searched, setSearched] = useState(false);
-  const [filteredRows, setFilteredRows] = useState<TRow[]>([]);
-  const session = useAuth();
-  const router = useRouter();
+    const [searchParams, setSearchParams] = useState<{
+        type: SearchMethod;
+        query: string;
+    } | null>(null);
 
-  const form = useForm({
-    initialValues: {
-      method: "national_id",
-      query: "",
-    },
-    validate: {
-      method: (method) => !method && "Searching method is required.",
-      query: (query) => !query && "Searching query is required.",
-    },
-  });
+    const form = useForm<{ method: SearchMethod; query: string }>({
+        initialValues: { method: "national_id", query: "" },
+        validate: {
+            method: (v) => !v && "Search method is required",
+            query: (v) => !v && "Search query is required",
+        },
+    });
 
-  const rows: TRow[] = [
-    {
-      voter_id: "83999222",
-      first_name: "Albi Ummid",
-      last_name: "Tanvir",
-      email: "albiummid@gmail.com",
-      phone: "+88088776644",
-    },
-    {
-      voter_id: "9898977",
-      first_name: "Juned Ahmed",
-      last_name: "Chowdhury",
-      email: "junedchowdhury1@gmail.com",
-      phone: "+88088776644",
-    },
-    {
-      voter_id: "9898977",
-      first_name: "SMF",
-      last_name: "Karim",
-      email: "smfkarim@gmail.com",
-      phone: "+88088776644",
-    },
-    {
-      voter_id: "9898977",
-      first_name: "Sujon",
-      last_name: "Mahmud",
-      email: "sujonmahmud@gmail.com",
-      phone: "+88088776644",
-    },
-  ];
-
-  const columns = [
-    { label: "Voter ID", key: "voter_id" },
-    { label: "First Name", key: "first_name" },
-    { label: "Last Name", key: "last_name" },
-    { label: "Email", key: "email" },
-    { label: "Phone", key: "phone" },
-  ];
-
-  const handleSearch = (values: typeof form.values) => {
-    const result = rows.filter((r) =>
-      String(r[values.method as keyof TRow])
-        .toLowerCase()
-        .includes(values.query.toLowerCase()),
+    // Fetch only when searchParams is not null
+    const { data, isFetching, isError } = useVoterSearchQuery(
+        {
+            type: (searchParams?.type as any) ?? "national_id",
+            query: searchParams?.query ?? "",
+        },
+        { enabled: !!searchParams } // only when button clicked
     );
-    setFilteredRows(result);
-    setSearched(true);
-  };
 
-  return (
-    <CenterWrapper>
-      <PaperWrapper>
-        <div className="w-full sm:w-3xl mx-auto">
-          <Header />
+    // let searchType = searchParams?.type ?? "national_id";
+    // let searchQuery = searchParams?.query ?? "";
+    // const { data, isFetching, isError } = useGetVoterRegistrationList(
+    //     {
+    //         [searchType]: searchQuery,
+    //         //  payment_received: true
+    //     } as any,
+    //     { enabled: !!searchParams } // only when button clicked
+    // );
 
-          {/* Search Form */}
-          <form
-            onSubmit={form.onSubmit(handleSearch)}
-            className="px-6 sm:px-20 space-y-4"
-          >
-            <div className="size-20 sm:size-28 mx-auto">
-              <Image
-                src="/bag_logo.png"
-                height={200}
-                width={200}
-                alt="bag_logo"
-              />
-            </div>
+    const handleSearch = (values: typeof form.values) => {
+        setSearchParams({ type: values.method, query: values.query });
+    };
 
-            <h1 className="font-semibold text-2xl text-primary text-center">
-              Polling Agent
-            </h1>
+    return (
+        <CenterWrapper>
+            <PaperWrapper>
+                <div className="w-full sm:w-4xl mx-auto">
+                    <Header />
 
-            <div className="space-y-3 mt-5">
-              <h1 className="text-center text-gray-700 font-medium">
-                BAG Voter Search
-              </h1>
+                    {/* Search Form */}
+                    <form
+                        onSubmit={form.onSubmit(handleSearch)}
+                        className="px-6 sm:px-20 space-y-4"
+                    >
+                        <div className="size-20 sm:size-28 mx-auto">
+                            <Image
+                                src="/bag_logo.png"
+                                height={200}
+                                width={200}
+                                alt="bag_logo"
+                            />
+                        </div>
 
-              <Select
-                placeholder="Select Search Method"
-                data={[
-                  {
-                    label: "National ID / Driving License (Last 5 Digits)",
-                    value: "national_id",
-                  },
-                  { label: "Email", value: "email" },
-                  { label: "Phone", value: "phone" },
-                  {
-                    label: "First Name",
-                    value: "first_name",
-                  },
-                  { label: "Last Name", value: "last_name" },
-                ]}
-                {...form.getInputProps("method")}
-              />
+                        <h1 className="font-semibold text-2xl text-primary text-center">
+                            Polling Agent
+                        </h1>
 
-              <TextInput
-                placeholder={
-                  form.values.method === "national_id"
-                    ? "Enter National ID / Driving License (Last 5 Digits)"
-                    : form.values.method === "email"
-                      ? "Enter Email Address"
-                      : form.values.method === "first_name"
-                        ? "Enter First Name"
-                        : form.values.method === "last_name"
-                          ? "Enter Last Name"
-                          : "Enter Phone Number"
-                }
-                type={form.values.method === "email" ? "email" : "text"}
-                {...form.getInputProps("query")}
-              />
+                        <div className="space-y-3 mt-5">
+                            <h1 className="text-center text-gray-700 font-medium">
+                                BAG Voter Search
+                            </h1>
 
-              <Button
-                fullWidth
-                type="submit"
-                rightSection={<FiSearch size={16} />}
-                mt={20}
-              >
-                Search
-              </Button>
-            </div>
-          </form>
+                            <Select
+                                placeholder="Select Search Method"
+                                data={[
+                                    {
+                                        label: "National ID / Driving License (Last 5 Digits)",
+                                        value: "national_id",
+                                    },
+                                    { label: "Email", value: "email" },
+                                    { label: "Phone", value: "phone" },
+                                    {
+                                        label: "First Name",
+                                        value: "first_name",
+                                    },
+                                    { label: "Last Name", value: "last_name" },
+                                ]}
+                                {...form.getInputProps("method")}
+                            />
 
-          {/* Search Result Table */}
-          {searched && (
-            <VoterTable
-              columns={columns}
-              rows={filteredRows}
-              onRetry={() => setSearched(false)}
-            />
-          )}
-        </div>
-      </PaperWrapper>
-    </CenterWrapper>
-  );
+                            <TextInput
+                                placeholder={
+                                    form.values.method === "national_id"
+                                        ? "Enter National ID / Driving License (Last 5 Digits)"
+                                        : form.values.method === "email"
+                                        ? "Enter Email Address"
+                                        : form.values.method === "first_name"
+                                        ? "Enter First Name"
+                                        : form.values.method === "last_name"
+                                        ? "Enter Last Name"
+                                        : "Enter Phone Number"
+                                }
+                                type={
+                                    form.values.method === "email"
+                                        ? "email"
+                                        : "text"
+                                }
+                                {...form.getInputProps("query")}
+                            />
+
+                            <Button
+                                fullWidth
+                                type="submit"
+                                rightSection={<FiSearch size={16} />}
+                                mt={20}
+                            >
+                                Search
+                            </Button>
+                        </div>
+                    </form>
+
+                    {/* Result Section */}
+                    <div className="mt-8 px-6 sm:px-20">
+                        {isFetching && (
+                            <div className="flex justify-center py-10">
+                                <Loader color="green" />
+                            </div>
+                        )}
+
+                        {!isFetching && searchParams && (
+                            <VoterTable
+                                columns={[
+                                    {
+                                        label: "Voter ID",
+                                        key: "voter_id_generated",
+                                    },
+                                    { label: "First Name", key: "first_name" },
+                                    { label: "Last Name", key: "last_name" },
+                                    { label: "Email", key: "email" },
+                                    { label: "Phone", key: "phone" },
+                                ]}
+                                rows={data?.data?.voter ?? []}
+                                // rows={
+                                //     (data?.data as TVoterRegistration[])?.slice(
+                                //         0,
+                                //         5
+                                //     ) || []
+                                // }
+                            />
+                        )}
+
+                        {isError && (
+                            <p className="text-center text-red-500 py-10">
+                                Something went wrong. Please try again.
+                            </p>
+                        )}
+                    </div>
+                </div>
+            </PaperWrapper>
+        </CenterWrapper>
+    );
 }
-
-/* ------------------------------ Types ------------------------------ */
-type TRow = {
-  voter_id: string;
-  first_name: string;
-  last_name: string;
-  email: string;
-  phone: string;
-};
 
 /* ----------------------------- Table UI ----------------------------- */
 const VoterTable = ({
-  columns,
-  rows,
-  onRetry,
+    columns,
+    rows,
 }: {
-  columns: { label: string; key: string }[];
-  rows: TRow[];
-  onRetry: () => void;
+    columns: { label: string; key: string }[];
+    rows: TRow[];
 }) => {
-  const router = useRouter();
+    const router = useRouter();
 
-  return (
-    <div className="mt-10 overflow-x-auto">
-      <table className="w-full border border-gray-200 text-sm text-left rounded-lg overflow-hidden">
-        <thead className="bg-primary text-white">
-          <tr>
-            {columns.map((col) => (
-              <th
-                key={col.key}
-                className="px-4 py-3 font-medium border-b border-primary/20"
-              >
-                {col.label}
-              </th>
-            ))}
-          </tr>
-        </thead>
-
-        <tbody>
-          {rows.length === 0 ? (
-            <tr>
-              <td
-                colSpan={columns.length}
-                className="py-10 text-center text-gray-500"
-              >
+    if (rows.length === 0)
+        return (
+            <div className="py-10 text-center text-gray-500">
                 <div className="flex flex-col items-center justify-center space-y-3">
-                  <div className="bg-red-100 text-red-500 p-5 rounded-full">
-                    <MdOutlinePersonOff size={40} />
-                  </div>
-                  <p className="text-gray-600 font-medium">No Voter Found</p>
+                    <div className="bg-red-100 text-red-500 p-5 rounded-full">
+                        <MdOutlinePersonOff size={40} />
+                    </div>
+                    <p className="text-gray-600 font-medium">No Voter Found</p>
                 </div>
-              </td>
-            </tr>
-          ) : (
-            rows.map((x, idx) => (
-              <tr
-                key={idx}
-                onClick={() =>
-                  router.push(`/polling-agent/voter/${x.voter_id}`)
-                }
-                className="even:bg-gray-50 odd:bg-green-50 hover:bg-green-100 cursor-pointer transition-colors"
-              >
-                {columns.map((col) => (
-                  <td
-                    key={col.key}
-                    className="px-4 py-2 border-b border-gray-100"
-                  >
-                    {x[col.key as keyof TRow] ?? "N/A"}
-                  </td>
-                ))}
-              </tr>
-            ))
-          )}
-        </tbody>
-      </table>
-    </div>
-  );
+            </div>
+        );
+
+    return (
+        <div className="overflow-x-auto">
+            <table className="w-full border border-gray-200 text-sm text-left rounded-lg overflow-hidden">
+                <thead className="bg-primary text-white">
+                    <tr>
+                        {columns.map((col) => (
+                            <th
+                                key={col.key}
+                                className="px-4 py-3 font-medium border-b border-primary/20"
+                            >
+                                {col.label}
+                            </th>
+                        ))}
+                    </tr>
+                </thead>
+
+                <tbody>
+                    {rows.map((x, idx) => (
+                        <tr
+                            key={idx}
+                            onClick={() => {
+                                router.push(
+                                    `/polling-agent/voter/${x.voter_id}`
+                                );
+                                useVoterStore.setState({ voter: x as any });
+                            }}
+                            className="even:bg-gray-50 odd:bg-green-50 hover:bg-green-100 cursor-pointer transition-colors"
+                        >
+                            {columns.map((col) => (
+                                <td
+                                    key={col.key}
+                                    className="px-4 py-2 border-b border-gray-100"
+                                >
+                                    {x[col.key as keyof TRow] ?? "N/A"}
+                                </td>
+                            ))}
+                        </tr>
+                    ))}
+                </tbody>
+            </table>
+        </div>
+    );
 };
