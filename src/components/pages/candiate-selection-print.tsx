@@ -1,22 +1,31 @@
 "use client";
 
-import { Candidate } from "@/@types/candidate";
+import { TForeignId } from "@/@types";
 import { useVoteStore } from "@/app/(private)/election/vote/vote.store";
-import { useGetCandidateList } from "@/services/api/candidate.api";
+import { useGetPanelCandidatesSortedList } from "@/services/api/candidate.api";
 import { Image } from "@mantine/core";
 import dayjs from "dayjs";
 
 export default function CandidateSelectionPrint() {
     const { ballotNumber, selectedCandidates } = useVoteStore();
 
-    const { data: panelACandidates } = useGetCandidateList({
-        page: 1,
+    const { data } = useGetPanelCandidatesSortedList({
         per_page: 100,
-    });
-    const { data: panelBCandidates } = useGetCandidateList({
         page: 1,
-        per_page: 100,
     });
+
+    const [panelA, panelB] = data?.data?.data || [null, null];
+    const panelASorted = panelA?.candidate_types
+        ?.map((x) => ({ a: x.candidates, b: x.candidate_type_name }))
+        .map((x) => x.a.map((y) => ({ ...y, type: x.b, panelId: 1 })))
+        .flat(Infinity);
+    const panelBSorted = panelB?.candidate_types
+        ?.map((x) => ({
+            a: x.candidates,
+            b: x.candidate_type_name,
+        }))
+        .map((x) => x.a.map((y) => ({ ...y, type: x.b, panelId: 2 })))
+        .flat(Infinity);
 
     return (
         <div
@@ -55,13 +64,13 @@ export default function CandidateSelectionPrint() {
                 <PanelPrint
                     title="Panel A"
                     color="green"
-                    list={panelACandidates?.data?.data ?? []}
+                    list={(panelASorted as any) ?? []}
                     selected={selectedCandidates}
                 />
                 <PanelPrint
                     title="Panel B"
                     color="red"
-                    list={panelBCandidates?.data?.data ?? []}
+                    list={(panelBSorted as any) ?? []}
                     selected={selectedCandidates}
                 />
             </main>
@@ -82,7 +91,13 @@ const PanelPrint = ({
 }: {
     title: string;
     color: "red" | "green";
-    list: Candidate[];
+    list: {
+        panelId: string;
+        name: string;
+        type: string;
+        id: TForeignId;
+        photo_url: string;
+    }[];
     selected: any[];
 }) => {
     return (
@@ -95,7 +110,7 @@ const PanelPrint = ({
                 {title}
             </h2>
 
-            <table className="w-full  text-sm flex-1">
+            <table className="w-full  text-sm flex-1 justify-start">
                 <thead className=" border-b ">
                     <tr className="">
                         <th className="p-1 w-6 text-left">#</th>
@@ -112,7 +127,7 @@ const PanelPrint = ({
                                 <td className="p-1">{i + 1}</td>
                                 <td className="p-1">{c.name}</td>
                                 <td className="p-1 text-gray-600">
-                                    {c.candidate_type?.name ?? ""}
+                                    {c.type ?? ""}
                                 </td>
                                 <td className="p-1 text-center">
                                     {isChecked ? "✔️" : ""}
