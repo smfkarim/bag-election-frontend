@@ -30,7 +30,6 @@ export const authOptions: NextAuthOptions = {
                 );
                 const data = await res.json();
                 if (!res.ok || !data.token) {
-                    console.log(res);
                     throw new Error(data?.error ?? "Wrong credentials");
                 }
 
@@ -47,7 +46,7 @@ export const authOptions: NextAuthOptions = {
     ],
 
     pages: {
-        signIn: "/auth/polling-agent",
+        signIn: "/auth/poll-officer",
     },
     session: {
         strategy: "jwt",
@@ -56,6 +55,7 @@ export const authOptions: NextAuthOptions = {
     callbacks: {
         async jwt({ token, user }) {
             if (user) {
+                token.id = String(user?.id) ?? "";
                 token.accessToken = user?.accessToken;
                 token.role = user.role as RoleEnum;
                 token.permissions = user.permissions as PermissionEnum[];
@@ -65,6 +65,7 @@ export const authOptions: NextAuthOptions = {
         async session({ session, token }) {
             session.user = {
                 ...session.user,
+                id: token.id ?? "",
                 accessToken: token.accessToken,
                 role: token.role as (typeof roleList)[number],
                 permissions:

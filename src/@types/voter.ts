@@ -82,3 +82,24 @@ export interface PaymentTransactions {
     created_at: string;
     updated_at: string;
 }
+
+export interface VoterSearchResponse {
+    source: string;
+    voters: Voter[];
+}
+
+export interface Voter {
+    uuid: string;
+    first_name: string;
+    middle_name: null;
+    last_name: string;
+    email: string;
+    phone: string;
+    voter_id_generated: string;
+    national_id: string;
+    photo_url: string;
+    membership_type: null;
+    panel: null;
+    creator: null;
+    payment_transactions: null;
+}

@@ -40,5 +40,6 @@ export default function useAuth() {
         permissions,
         token: data?.user.accessToken,
         hasAccess,
+        userId: data?.user.id,
     };
 }

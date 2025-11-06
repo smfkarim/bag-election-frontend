@@ -1,21 +1,28 @@
 "use client";
 import CandidateSelectionPrint from "@/components/pages/candiate-selection-print";
+import useAuth from "@/hooks/useAuth";
+import { useFullDeviceInfo } from "@/hooks/useFullDeviceInfo";
 import { getBucketURL } from "@/lib/helpers";
+import { useSendSixDigitCodeMutation } from "@/services/api/poll-officer.api";
 import { useVoterStore } from "@/store/voter-store";
 import { Button, Image } from "@mantine/core";
 import { modals } from "@mantine/modals";
 import { notifications } from "@mantine/notifications";
 import dayjs from "dayjs";
-import { useParams, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { useRef, useState } from "react";
 import { AiOutlineKey, AiOutlinePrinter, AiOutlineSend } from "react-icons/ai";
 import { MdArrowBackIosNew } from "react-icons/md";
 import { useReactToPrint } from "react-to-print";
 
 export default function VoterDetails() {
+    const { device, loading, error } = useFullDeviceInfo();
+    const sixDigitKeySendEmailMutation = useSendSixDigitCodeMutation();
+    const sixDigitKeyPrintMutation = useSendSixDigitCodeMutation();
+    const sixDigitKeyPrintBallotMutation = useSendSixDigitCodeMutation();
     const { voter } = useVoterStore();
-    const [ballotPrinted, setBallotPrinted] = useState(false);
-    const { voterId }: { voterId: string } = useParams();
+    const { userId } = useAuth();
+    const [ballotPrinted, setBallotPrinted] = useState(false); // this case will be handled later.
     const router = useRouter();
     const printRef = useRef<HTMLDivElement>(null);
     const reactToPrintFn = useReactToPrint({
@@ -23,26 +30,46 @@ export default function VoterDetails() {
         documentTitle: "Ballot Paper",
     });
 
+    console.log(device);
+
     const sendSecretKey = async () => {
-        notifications.show({
-            title: "Success",
-            message: "Secret key sent to user's email",
-        });
+        try {
+            await sixDigitKeySendEmailMutation.mutateAsync({
+                type: "mail",
+                device_info: device?.hostname ?? "",
+                user_id: userId ?? "",
+                uuid: voter?.uuid ?? "",
+            });
+            notifications.show({
+                title: "Success",
+                message: "Secret key sent to voter's email",
+            });
+        } catch {}
     };
 
     const printSecretKey = async () => {
-        notifications.show({
-            title: "Success",
-            message: "Secret Key printed successfully",
-        });
+        try {
+            await sixDigitKeyPrintMutation.mutateAsync({
+                type: "print",
+                device_info: device?.hostname ?? "",
+                user_id: userId ?? "",
+                uuid: voter?.uuid ?? "",
+            });
+            notifications.show({
+                title: "Success",
+                message: "Secret Key printed successfully",
+            });
+        } catch {}
     };
 
     const doBoth = async () => {
-        await sendSecretKey();
-
-        setTimeout(async () => {
-            await printSecretKey();
-        }, 2000);
+        try {
+            // we don't need both api call
+            await sendSecretKey();
+            setTimeout(async () => {
+                await printSecretKey();
+            }, 2000);
+        } catch {}
     };
 
     const printBallotPaper = () => {
@@ -66,15 +93,26 @@ export default function VoterDetails() {
                             Cancel
                         </Button>
                         <Button
-                            onClick={() => {
-                                setBallotPrinted(true);
-                                reactToPrintFn();
-                                // notifications.show({
-                                //     title: "Success",
-                                //     message:
-                                //         "Ballot paper printed successfully",
-                                // });
-                                modals.closeAll();
+                            onClick={async () => {
+                                try {
+                                    setBallotPrinted(true);
+                                    await sixDigitKeyPrintBallotMutation.mutateAsync(
+                                        {
+                                            type: "ballot",
+                                            device_info: "123456",
+                                            user_id: userId ?? "",
+                                            uuid: voter?.uuid ?? "",
+                                        }
+                                    );
+                                    reactToPrintFn();
+                                } finally {
+                                    // notifications.show({
+                                    //     title: "Success",
+                                    //     message:
+                                    //         "Ballot paper printed successfully",
+                                    // });
+                                    modals.closeAll();
+                                }
                             }}
                         >
                             Print Ballot Paper
@@ -85,6 +123,8 @@ export default function VoterDetails() {
         });
     };
 
+    // if (loading) return <div>Device is loading...</div>;
+    // if (error) return <div>Got error to load device info</div>;
     if (!voter) return <div>Voter not found.</div>;
 
     return (
@@ -92,7 +132,6 @@ export default function VoterDetails() {
             {/* ✅ Keep this div mounted and offscreen (NOT hidden or display:none) */}
             <div style={{ display: "none" }}>
                 <div ref={printRef}>
-                    {" "}
                     <CandidateSelectionPrint />
                 </div>
             </div>
@@ -155,15 +194,13 @@ export default function VoterDetails() {
                             value={voter?.voter_id_generated ?? ""}
                         />
                         <LabelValueCard label="Email" value={voter?.email} />
-                        <LabelValueCard
-                            label="Address"
-                            value={voter?.address ?? ""}
-                        />
+                        <LabelValueCard label="Address" value={"N/A"} />
                     </div>
 
                     {/* Action Buttons */}
                     <div className=" flex justify-center gap-5 mt-10">
                         <Button
+                            loading={sixDigitKeySendEmailMutation.isPending}
                             disabled={ballotPrinted}
                             onClick={sendSecretKey}
                             leftSection={<AiOutlineSend size={16} />}
@@ -172,6 +209,7 @@ export default function VoterDetails() {
                             Send Secrete Key
                         </Button>
                         <Button
+                            loading={sixDigitKeyPrintMutation.isPending}
                             disabled={ballotPrinted}
                             onClick={printSecretKey}
                             leftSection={<AiOutlineKey size={16} />}
@@ -188,6 +226,7 @@ export default function VoterDetails() {
                             Both
                         </Button>
                         <Button
+                            loading={sixDigitKeyPrintBallotMutation.isPending}
                             disabled={ballotPrinted}
                             onClick={printBallotPaper}
                             leftSection={<AiOutlinePrinter size={16} />}

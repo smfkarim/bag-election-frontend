@@ -1,6 +1,5 @@
-import { cookies } from "next/headers";
-import { NextResponse } from "next/server";
 import { withAuth } from "next-auth/middleware";
+import { NextResponse } from "next/server";
 import type { RoleEnum } from "./constants/auth.constant";
 
 /**
@@ -8,65 +7,69 @@ import type { RoleEnum } from "./constants/auth.constant";
  * It verifies session token and optionally checks user role.
  */
 export default withAuth(
-  // Custom callback — runs after NextAuth verifies the token
-  async function middleware(req) {
-    // customized auth for members
-    if (req.nextUrl.pathname.startsWith("/election")) {
-      const _cookies = await cookies();
-      const isValidVoter = _cookies.get("isVoter")?.value === "1"; // dummy verification [After verifying Secret, and gave me a token and i will verify that]
-      if (!isValidVoter) {
-        return NextResponse.redirect(new URL("/unauthorized", req.url));
-      }
-      return NextResponse.next();
-    }
+    // Custom callback — runs after NextAuth verifies the token
+    async function middleware(req) {
+        // customized auth for members
 
-    // traditional auth for agent
-    // authentication
-    if (!req.nextauth.token || !req.nextauth.token.role)
-      return NextResponse.redirect(new URL("/auth/polling-agent", req.url));
+        // console.log(req.nextUrl.pathname, "LL");
+        // if (req.nextUrl.pathname.startsWith("/election")) {
+        //     const _cookies = await cookies();
+        //     const isValidVoter = _cookies.get("isVoter")?.value === "1"; // dummy verification [After verifying Secret, and gave me a token and i will verify that]
+        //     if (!isValidVoter) {
+        //         return NextResponse.redirect(new URL("/unauthorized", req.url));
+        //     }
+        //     return NextResponse.next();
+        // }
 
-    // authorization
-    const { role } = req.nextauth.token;
+        // traditional auth for agent
+        // authentication
+        if (!req.nextauth.token || !req.nextauth.token.role)
+            return NextResponse.redirect(
+                new URL("/auth/poll-officer", req.url)
+            );
 
-    const roleBasedRouteMap: Record<RoleEnum, string[]> = {
-      "Poll Officer": ["/polling-agent/vote"],
-      "Super Admin": [],
-      "Election Commission": [],
-      "Panel Admin": [],
-      Voter: [],
-    };
+        // authorization
+        const { role } = req.nextauth.token;
 
-    const route = req.nextUrl.pathname;
-    const allowedRoutes = roleBasedRouteMap[role];
+        const roleBasedRouteMap: Record<RoleEnum, string[]> = {
+            "Poll Officer": ["/poll-officer"],
+            "Super Admin": [],
+            "Election Commission": [],
+            "Panel Admin": [],
+            Voter: [],
+        };
 
-    const hasAccess = allowedRoutes.some((routePrefix) => {
-      return route.startsWith(routePrefix);
-    });
+        const route = req.nextUrl.pathname;
+        const allowedRoutes = roleBasedRouteMap[role];
 
-    if (!hasAccess) {
-      return NextResponse.redirect(new URL("/unauthorized", req.url));
-    }
+        const hasAccess = allowedRoutes.some((routePrefix) => {
+            return route.startsWith(routePrefix);
+        });
 
-    // Allow request
-    return NextResponse.next();
-  },
-  {
-    /**
-     * NextAuth middleware options
-     * This ensures JWT validation and session parsing
-     */
-    callbacks: {
-      authorized: ({ token }) => !!token, // require login for all matched routes
+        if (!hasAccess) {
+            return NextResponse.redirect(new URL("/unauthorized", req.url));
+        }
+
+        // Allow request
+        return NextResponse.next();
     },
-  },
+    {
+        /**
+         * NextAuth middleware options
+         * This ensures JWT validation and session parsing
+         */
+        callbacks: {
+            authorized: ({ token }) => !!token, // require login for all matched routes
+        },
+    }
 );
 
 /**
  * Define which routes are protected
  */
 export const config = {
-  matcher: [
-    "/polling-agent/:path*", // protect dashboard and its subroutes
-    "/election/:path*", // protect admin routes
-  ],
+    matcher: [
+        "/poll-officer/:path*", // protect dashboard and its subroutes
+        // "/election/:path*", // protect admin routes
+    ],
 };

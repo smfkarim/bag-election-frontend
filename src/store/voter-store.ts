@@ -1,10 +1,20 @@
-import { TVoterRegistration } from "@/@types/voter";
+import { Voter } from "@/@types/voter";
 import { create } from "zustand";
+import { createJSONStorage, persist } from "zustand/middleware";
+import { secureStorage } from "./auth-store";
 
 interface VoterStore {
-    voter: TVoterRegistration | null;
+    voter: Voter | null;
 }
 
-export const useVoterStore = create<VoterStore>((set, get) => ({
-    voter: null,
-}));
+export const useVoterStore = create<VoterStore>()(
+    persist(
+        (set, get) => ({
+            voter: null,
+        }),
+        {
+            name: "auth",
+            storage: createJSONStorage(() => secureStorage),
+        }
+    )
+);

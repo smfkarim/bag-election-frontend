@@ -1,9 +1,10 @@
 "use client";
 
+import { Voter } from "@/@types/voter";
 import CenterWrapper from "@/components/layout/center-wrapper";
 import Header from "@/components/layout/header";
 import PaperWrapper from "@/components/layout/paper-wrapper";
-import { useVoterSearchQuery } from "@/services/api/voter.api";
+import { useVoterSearchQuery } from "@/services/api/poll-officer.api";
 import { useVoterStore } from "@/store/voter-store";
 import { Button, Loader, Select, TextInput } from "@mantine/core";
 import { useForm } from "@mantine/form";
@@ -12,14 +13,6 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { FiSearch } from "react-icons/fi";
 import { MdOutlinePersonOff } from "react-icons/md";
-
-type TRow = {
-    voter_id: string;
-    first_name: string;
-    last_name: string;
-    email: string;
-    phone: string;
-};
 
 type SearchMethod =
     | "national_id"
@@ -43,23 +36,13 @@ export default function Page() {
     });
 
     // Fetch only when searchParams is not null
-    const { data, isFetching, isError } = useVoterSearchQuery(
+    const { data, isLoading, isError } = useVoterSearchQuery(
         {
             type: (searchParams?.type as any) ?? "national_id",
             query: searchParams?.query ?? "",
         },
         { enabled: !!searchParams } // only when button clicked
     );
-
-    // let searchType = searchParams?.type ?? "national_id";
-    // let searchQuery = searchParams?.query ?? "";
-    // const { data, isFetching, isError } = useGetVoterRegistrationList(
-    //     {
-    //         [searchType]: searchQuery,
-    //         //  payment_received: true
-    //     } as any,
-    //     { enabled: !!searchParams } // only when button clicked
-    // );
 
     const handleSearch = (values: typeof form.values) => {
         setSearchParams({ type: values.method, query: values.query });
@@ -74,7 +57,7 @@ export default function Page() {
                     {/* Search Form */}
                     <form
                         onSubmit={form.onSubmit(handleSearch)}
-                        className="px-6 sm:px-20 space-y-4"
+                        className="px-6 sm:px-20 space-y-4 max-w-3xl mx-auto "
                     >
                         <div className="size-20 sm:size-28 mx-auto">
                             <Image
@@ -144,14 +127,14 @@ export default function Page() {
                     </form>
 
                     {/* Result Section */}
-                    <div className="mt-8 px-6 sm:px-20">
-                        {isFetching && (
+                    <div className="mt-8 px-6 sm:px-10">
+                        {isLoading && (
                             <div className="flex justify-center py-10">
                                 <Loader color="green" />
                             </div>
                         )}
 
-                        {!isFetching && searchParams && (
+                        {!isLoading && searchParams && (
                             <VoterTable
                                 columns={[
                                     {
@@ -163,13 +146,7 @@ export default function Page() {
                                     { label: "Email", key: "email" },
                                     { label: "Phone", key: "phone" },
                                 ]}
-                                rows={data?.data?.voter ?? []}
-                                // rows={
-                                //     (data?.data as TVoterRegistration[])?.slice(
-                                //         0,
-                                //         5
-                                //     ) || []
-                                // }
+                                rows={data?.data?.voters ?? []}
                             />
                         )}
 
@@ -191,7 +168,7 @@ const VoterTable = ({
     rows,
 }: {
     columns: { label: string; key: string }[];
-    rows: TRow[];
+    rows: Voter[];
 }) => {
     const router = useRouter();
 
@@ -208,45 +185,52 @@ const VoterTable = ({
         );
 
     return (
-        <div className="overflow-x-auto">
-            <table className="w-full border border-gray-200 text-sm text-left rounded-lg overflow-hidden">
-                <thead className="bg-primary text-white">
-                    <tr>
-                        {columns.map((col) => (
-                            <th
-                                key={col.key}
-                                className="px-4 py-3 font-medium border-b border-primary/20"
-                            >
-                                {col.label}
-                            </th>
-                        ))}
-                    </tr>
-                </thead>
-
-                <tbody>
-                    {rows.map((x, idx) => (
-                        <tr
-                            key={idx}
-                            onClick={() => {
-                                router.push(
-                                    `/polling-agent/voter/${x.voter_id}`
-                                );
-                                useVoterStore.setState({ voter: x as any });
-                            }}
-                            className="even:bg-gray-50 odd:bg-green-50 hover:bg-green-100 cursor-pointer transition-colors"
-                        >
+        <div className="border border-gray-200 rounded-lg overflow-hidden">
+            <div className="overflow-x-auto">
+                <table className="w-full text-sm text-left border-collapse">
+                    <thead className="bg-primary text-white sticky top-0 z-10">
+                        <tr>
                             {columns.map((col) => (
-                                <td
+                                <th
                                     key={col.key}
-                                    className="px-4 py-2 border-b border-gray-100"
+                                    className="px-4 py-3 font-medium border-b border-primary/20"
                                 >
-                                    {x[col.key as keyof TRow] ?? "N/A"}
-                                </td>
+                                    {col.label}
+                                </th>
                             ))}
                         </tr>
-                    ))}
-                </tbody>
-            </table>
+                    </thead>
+                </table>
+            </div>
+
+            {/* Scrollable body */}
+            <div className="max-h-40 overflow-y-auto overflow-x-auto">
+                <table className="w-full text-sm text-left border-collapse">
+                    <tbody>
+                        {rows.map((x, idx) => (
+                            <tr
+                                key={idx}
+                                onClick={() => {
+                                    router.push(
+                                        `/poll-officer/voter/${x.uuid}`
+                                    );
+                                    useVoterStore.setState({ voter: x as any });
+                                }}
+                                className="even:bg-gray-50 odd:bg-green-50 hover:bg-green-100 cursor-pointer transition-colors"
+                            >
+                                {columns.map((col) => (
+                                    <td
+                                        key={col.key}
+                                        className="px-4 py-2 border-b border-gray-100"
+                                    >
+                                        {x[col.key as keyof typeof x] ?? "N/A"}
+                                    </td>
+                                ))}
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            </div>
         </div>
     );
 };

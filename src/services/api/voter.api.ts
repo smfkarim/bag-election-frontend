@@ -1,28 +1,21 @@
-import { TVoter } from "@/@types/voter";
-import { UndefinedInitialDataOptions, useQuery } from "@tanstack/react-query";
+import { TForeignId } from "@/@types";
+import { useMutation } from "@tanstack/react-query";
 import api from ".";
 
-interface VoterSearchResponse {
-    source: "server" | "cache";
-    voter: TVoter[];
-}
+export const useValidateSixDigitKeyMutation = () =>
+    useMutation({
+        mutationKey: ["validate-six-digit-key"],
+        mutationFn: (payload: { deviceId: TForeignId; code: string }) =>
+            api.post("/v1/voter/validate", payload),
+    });
 
-export const useVoterSearchQuery = (
-    {
-        type,
-        query,
-    }: {
-        type: "email" | "first_name" | "last_name" | "national_id";
-        query: string;
-    },
-    options?: Omit<UndefinedInitialDataOptions, "queryKey" | "queryFn">
-) =>
-    useQuery({
-        ...options,
-        queryKey: ["voter_search", { type, query }],
-        queryFn: async () => {
-            return await api.get<VoterSearchResponse>(
-                `/v1/voters/search?type=${type}&query=${query}`
-            );
-        },
+export const useGiveVoteMutation = () =>
+    useMutation({
+        mutationKey: ["vote"],
+        mutationFn: (payload: {
+            election_id: TForeignId;
+            voter_id: TForeignId;
+            candidate_id: TForeignId;
+            device_id: TForeignId;
+        }) => api.post("/vote", payload),
     });

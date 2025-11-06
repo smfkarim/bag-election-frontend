@@ -21,17 +21,17 @@ type AuthState = {
     }) => void;
 };
 
-const secureStorage = {
+export const secureStorage = {
     getItem: (name: string) => {
-        const item = sessionStorage.getItem(name);
+        const item = localStorage.getItem(name);
         if (!item) return null;
         const decoded = atob(item);
         return decoded;
     },
     setItem: (name: string, value: string) => {
-        sessionStorage.setItem(name, btoa(value)); // Base64 encoding
+        localStorage.setItem(name, btoa(value)); // Base64 encoding
     },
-    removeItem: (name: string) => sessionStorage.removeItem(name),
+    removeItem: (name: string) => localStorage.removeItem(name),
 };
 
 export const useAuthStore = create<AuthState>()(

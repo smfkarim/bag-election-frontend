@@ -3,45 +3,17 @@ import { useValidateSixDigitKeyMutation } from "@/services/api/voter.api";
 import { Button, Image, PinInput } from "@mantine/core";
 import cookie from "js-cookie";
 import { useRouter } from "next/navigation";
-import { type ComponentRef, useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { AiOutlineLock } from "react-icons/ai";
 
-export default function MemberLogin() {
+export default function MemberAuth() {
     const router = useRouter();
     // const requiredPin = "123456";
     const { mutateAsync: validateSixDigitCode } =
         useValidateSixDigitKeyMutation();
     const [blocked, setBlocked] = useState(false);
-    const pin1Ref = useRef<ComponentRef<typeof PinInput>>(null);
-    const pin2Ref = useRef<ComponentRef<typeof PinInput>>(null);
-    const [pin1, setPin1] = useState("");
-    const [pin2, setPin2] = useState("");
-    const pin = pin1 + pin2;
+    const [pin, setPin] = useState("");
     const [retryCount, setRetryCount] = useState(0);
-
-    useEffect(() => {
-        if (pin1.length === 3 && pin2.length === 0) {
-            pin2Ref?.current?.focus();
-        }
-    }, [pin1]);
-    const handlePin2Change = (value: string) => {
-        setPin2(value);
-        // If pin2 becomes empty and pin1 has content, focus back to last input of pin1
-        if (value === "" && pin1.length > 0) {
-            // Use setTimeout to ensure the focus happens after the state update
-            setTimeout(() => {
-                const pin1Element = pin1Ref.current;
-                if (pin1Element) {
-                    // Get all input elements within pin1
-                    const inputs = pin1Element.querySelectorAll("input");
-                    // Focus the last input (index 2 for length 3)
-                    if (inputs.length > 0) {
-                        inputs[inputs.length - 1].focus();
-                    }
-                }
-            }, 0);
-        }
-    };
 
     const handleContinue = async () => {
         // if (pin !== requiredPin) {
@@ -58,12 +30,14 @@ export default function MemberLogin() {
         try {
             await validateSixDigitCode({
                 code: pin,
-                deviceId: "windows",
+                deviceId: "123456",
             });
-            console.log(cookie.get("isVoter"));
+
             cookie.set("isVoter", "1");
             router.push("/election/vote");
-        } catch (error) {}
+        } catch (error) {
+            setBlocked(true);
+        }
     };
 
     useEffect(() => {
@@ -104,37 +78,23 @@ export default function MemberLogin() {
                     )}
                     <PinInput
                         size="lg"
-                        ref={pin1Ref}
-                        length={3}
-                        value={pin1}
-                        onChange={setPin1}
+                        length={6}
+                        value={pin}
+                        onChange={setPin}
                         classNames={{
                             input:
-                                pin1.length === 3
+                                pin.length === 6
                                     ? "border-2! border-green-800!"
                                     : "",
                         }}
                     />
-                    <p
+                    {/* <p
                         className={`text-3xl mx-2 ${
                             blocked ? "opacity-0" : ""
                         }`}
                     >
                         -
-                    </p>
-                    <PinInput
-                        classNames={{
-                            input:
-                                pin2.length === 3
-                                    ? "border-2! border-green-800!"
-                                    : "",
-                        }}
-                        size="lg"
-                        value={pin2}
-                        onChange={handlePin2Change}
-                        ref={pin2Ref}
-                        length={3}
-                    />
+                    </p> */}
                 </div>
                 <Button
                     type="submit"

@@ -37,7 +37,7 @@ export default function PollingAgentLogin() {
             });
 
             if (res?.ok) {
-                router.push("/polling-agent/voter");
+                router.push("/poll-officer");
             } else {
                 notifications.show({
                     color: "red",
@@ -52,7 +52,7 @@ export default function PollingAgentLogin() {
 
     useEffect(() => {
         if (isAuthenticated && role === "Poll Officer") {
-            router.push("/polling-agent/voter");
+            router.push("/poll-officer/voter");
         }
     }, []);
 
