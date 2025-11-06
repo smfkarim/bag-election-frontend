@@ -1,4 +1,5 @@
 "use client";
+import { useVoteStore } from "@/app/(private)/election/vote/vote.store";
 import { useValidateSixDigitKeyMutation } from "@/services/api/voter.api";
 import { Button, Image, PinInput } from "@mantine/core";
 import cookie from "js-cookie";
@@ -28,9 +29,15 @@ export default function MemberAuth() {
         // // notifications.show({})
 
         try {
-            await validateSixDigitCode({
+            const res = await validateSixDigitCode({
                 code: pin,
                 device_id: "123456",
+            });
+
+            console.log(res.data);
+            useVoteStore.setState({
+                ballotNumber: res.data?.data.eight_digit_code,
+                voter_id: res.data?.data.voter_id,
             });
 
             cookie.set("isVoter", "1");

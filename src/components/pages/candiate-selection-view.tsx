@@ -1,14 +1,15 @@
 "use client";
 
-import { Candidate } from "@/@types/candidate";
+import { TForeignId } from "@/@types";
 import { useVoteStore } from "@/app/(private)/election/vote/vote.store";
 import { getBucketURL } from "@/lib/helpers";
-import { useGetCandidateList } from "@/services/api/candidate.api";
-import { useGiveVoteMutation } from "@/services/api/voter.api";
+import { useGetPanelCandidatesSortedList } from "@/services/api/candidate.api";
+import { useGiveBulkVoteMutation } from "@/services/api/voter.api";
 import { Button, Checkbox, Image } from "@mantine/core";
 import { modals } from "@mantine/modals";
 import dayjs from "dayjs";
 import { useRouter } from "next/navigation";
+import { ComponentRef, useRef } from "react";
 
 export type TCandidate = {
     id: number;
@@ -28,32 +29,78 @@ export type TSelection = {
 export default function CandidateSelectionView() {
     const router = useRouter();
 
-    const { data: panelACandidates } = useGetCandidateList({
-        page: 1,
-        per_page: 100,
-    });
-    const { data: panelBCandidates } = useGetCandidateList({
-        page: 1,
-        per_page: 100,
-    });
-
     const { ballotNumber, selectedCandidates, voter_id } = useVoteStore();
-    const giveVoteMutation = useGiveVoteMutation();
+    const giveVoteMutation = useGiveBulkVoteMutation();
 
     const handleSubmitVote = async () => {
-        try {
-            for (let candidate of selectedCandidates) {
-                await giveVoteMutation.mutateAsync({
-                    candidate_id: candidate.id,
-                    device_id: "windows",
-                    election_id: "1",
-                    voter_id,
-                });
-            }
-            modals.closeAll();
-            router.push("/election/vote/summary");
-        } catch {}
+        modals.open({
+            closeOnClickOutside: false,
+            withCloseButton: false,
+            centered: true,
+            size: "300px",
+            children: (
+                <div className=" flex flex-col items-center space-y-3">
+                    <p className=" text-center p-5 ">
+                        Are you sure to confirm the vote and print the Ballot
+                        Paper ?
+                    </p>
+
+                    <div className=" flex items-center gap-5">
+                        <Button
+                            variant="outline"
+                            color="red"
+                            onClick={() => {
+                                modals.closeAll();
+                            }}
+                        >
+                            Cancel
+                        </Button>
+                        <Button
+                            onClick={async (e) => {
+                                e.preventDefault();
+                                try {
+                                    const ids = selectedCandidates?.map(
+                                        (x) => x.id
+                                    );
+                                    await giveVoteMutation.mutateAsync({
+                                        candidate_ids: ids,
+                                        device_id: "windows",
+                                        election_id: "1",
+                                        voter_id,
+                                    });
+
+                                    modals.closeAll();
+                                    router.push("/election/vote/summary");
+                                } catch {
+                                    console.log("E");
+                                }
+                            }}
+                        >
+                            Confirm
+                        </Button>
+                    </div>
+                </div>
+            ),
+        });
     };
+
+    const { data } = useGetPanelCandidatesSortedList({
+        per_page: 100,
+        page: 1,
+    });
+
+    const [panelA, panelB] = data?.data?.data || [null, null];
+    const panelASorted = panelA?.candidate_types
+        ?.map((x) => ({ a: x.candidates, b: x.candidate_type_name }))
+        .map((x) => x.a.map((y) => ({ ...y, type: x.b, panelId: 1 })))
+        .flat(Infinity);
+    const panelBSorted = panelB?.candidate_types
+        ?.map((x) => ({
+            a: x.candidates,
+            b: x.candidate_type_name,
+        }))
+        .map((x) => x.a.map((y) => ({ ...y, type: x.b, panelId: 2 })))
+        .flat(Infinity);
 
     return (
         <div className="m-5 max-w-7xl mx-auto space-y-5">
@@ -78,70 +125,38 @@ export default function CandidateSelectionView() {
                     </div>
                 </div>
                 <div>
-                    {panelACandidates?.data?.data?.length === 0 ||
-                    panelBCandidates?.data?.data?.length === 0 ? (
+                    {panelASorted?.length === 0 ||
+                    panelBSorted?.length === 0 ? (
                         <p className=" text-center my-10 ">
                             No candidates available
                         </p>
                     ) : (
                         <div>
                             {/* Panel Options */}
-                            <div className="flex items-center gap-10">
+                            <div
+                                className={`flex  gap-10 ${
+                                    process.env.NEXT_PUBLIC_PANEL_SWAP ===
+                                    "true"
+                                        ? "flex-row-reverse"
+                                        : ""
+                                }`}
+                            >
                                 <PanelSection
-                                    candidateList={
-                                        panelACandidates?.data.data ?? []
-                                    }
-                                    name="B"
-                                    color="red"
-                                />
-                                <PanelSection
-                                    candidateList={
-                                        panelBCandidates?.data.data ?? []
-                                    }
+                                    candidateList={(panelASorted as any) ?? []}
                                     name="A"
                                     color="green"
                                 />
+                                <PanelSection
+                                    candidateList={(panelBSorted as any) ?? []}
+                                    name="B"
+                                    color="red"
+                                />
                             </div>
 
-                            <div className="flex justify-center items-center">
+                            <div className="flex justify-center items-center my-10">
                                 <Button
                                     disabled={selectedCandidates.length !== 15}
-                                    onClick={() => {
-                                        modals.open({
-                                            closeOnClickOutside: false,
-                                            withCloseButton: false,
-                                            centered: true,
-                                            size: "300px",
-                                            children: (
-                                                <div className=" flex flex-col items-center space-y-3">
-                                                    <p className=" text-center p-5 ">
-                                                        Are you sure to confirm
-                                                        the vote and print the
-                                                        Ballot Paper ?
-                                                    </p>
-
-                                                    <div className=" flex items-center gap-5">
-                                                        <Button
-                                                            variant="outline"
-                                                            color="red"
-                                                            onClick={() => {
-                                                                modals.closeAll();
-                                                            }}
-                                                        >
-                                                            Cancel
-                                                        </Button>
-                                                        <Button
-                                                            onClick={
-                                                                handleSubmitVote
-                                                            }
-                                                        >
-                                                            Confirm
-                                                        </Button>
-                                                    </div>
-                                                </div>
-                                            ),
-                                        });
-                                    }}
+                                    onClick={handleSubmitVote}
                                     radius={10}
                                     w={400}
                                     size="lg"
@@ -159,7 +174,13 @@ export default function CandidateSelectionView() {
 
 const PanelSection = (props: {
     name: string;
-    candidateList: Candidate[];
+    candidateList: {
+        panelId: string;
+        name: string;
+        type: string;
+        id: TForeignId;
+        photo_url: string;
+    }[];
     color: "red" | "green";
 }) => {
     return (
@@ -168,7 +189,7 @@ const PanelSection = (props: {
                 <h1 className="text-center text-2xl">Panel {props.name}</h1>
             </div>
             <div
-                className={`p-10 rounded-2xl space-y-3 ${
+                className={`p-5 rounded-2xl space-y-3 ${
                     props.color === "red" ? "bg-red-800/10" : "bg-green-800/10"
                 }`}
             >
@@ -187,13 +208,20 @@ const PanelSection = (props: {
 
 const CandidateCard = (props: {
     panel: string;
-    data: Candidate;
+    data: {
+        panelId: string;
+        name: string;
+        type: string;
+        id: TForeignId;
+        photo_url: string;
+    };
     index: number;
 }) => {
     const { onSelectedCandidatesChanged, selectedCandidates } = useVoteStore();
+    const ref = useRef<ComponentRef<typeof Checkbox>>(null);
     const data = {
         name: props.data.name,
-        type: props.data.candidate_type?.name ?? "",
+        type: props.data.type,
         index: props.index,
         panel: props.panel,
         id: Number(props.data.id),
@@ -205,11 +233,18 @@ const CandidateCard = (props: {
 
     return (
         <div
-            className={`flex gap-5 bg-white items-center border rounded-xl px-5 py-2 ${
+            onClick={(e) => {
+                e.preventDefault();
+                if (!cardDisable) {
+                    onSelectedCandidatesChanged(!checked, data);
+                }
+            }}
+            className={`select-none  flex gap-5 bg-white items-center border rounded-xl px-5 py-2 ${
                 checked ? "border-green-800" : "border-transparent"
             } ${cardDisable ? "opacity-50" : ""}`}
         >
             <Checkbox
+                ref={ref}
                 disabled={cardDisable}
                 size="md"
                 checked={checked}
@@ -217,16 +252,16 @@ const CandidateCard = (props: {
                     onSelectedCandidatesChanged(e.target.checked, data)
                 }
             />
-            <div className="size-15 rounded-full">
+            <div className="size-25 rounded-full">
                 <Image
                     src={getBucketURL(props.data?.photo_url as string)}
                     alt={props.data.name}
-                    className="h-full w-full"
+                    className="h-full w-full object-top"
                 />
             </div>
             <div>
                 <h1>{props.data?.name}</h1>
-                <p className="text-xs">{props.data?.candidate_type?.name}</p>
+                <p className="text-xs">{props.data?.type}</p>
             </div>
         </div>
     );

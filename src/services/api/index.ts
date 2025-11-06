@@ -54,14 +54,14 @@ api.interceptors.response.use(
         }
 
         // Handle 403 Forbidden
-        if (response?.status === 403) {
-            if (
-                typeof window !== "undefined" &&
-                !window.location.pathname.includes("/unauthorized")
-            ) {
-                window.location.href = "/unauthorized";
-            }
-        }
+        // if (response?.status === 403) {
+        //     if (
+        //         typeof window !== "undefined" &&
+        //         !window.location.pathname.includes("/unauthorized")
+        //     ) {
+        //         window.location.href = "/unauthorized";
+        //     }
+        // }
 
         // Handle network errors
         if (!response) {

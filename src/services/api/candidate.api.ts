@@ -22,6 +22,44 @@ export const useGetCandidateList = (params: ListParams<Candidate>) =>
             return data.data;
         },
     });
+export const useGetPanelCandidatesSortedList = (
+    params: ListParams<Candidate>
+) =>
+    useQuery({
+        queryKey: ["candidate-sorted", params],
+        queryFn: async () => {
+            const data = await axios.get<ListResponse<PanelCandidates>>(
+                baseURL + `/v1/${tag}/get-candidates`,
+                params
+                    ? {
+                          params,
+                      }
+                    : undefined
+            );
+            return data.data;
+        },
+    });
+
+interface PanelCandidates {
+    panel_id: number;
+    panel_name: string;
+    panel_code: string;
+    candidate_types: CandidateType[];
+}
+
+interface CandidateType {
+    candidate_type_id: number;
+    candidate_type_name: string;
+    candidates: TCandidate[];
+}
+
+interface TCandidate {
+    id: number;
+    uuid: string;
+    name: string;
+    code: string;
+    photo_url: string;
+}
 
 // export const useCandidateUpdateMutation = () => {
 //     return useMutation({

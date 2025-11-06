@@ -58,7 +58,7 @@ export default function MemberLogin() {
         try {
             await validateSixDigitCode({
                 code: pin,
-                deviceId: "windows",
+                device_id: "123456",
             });
             console.log(cookie.get("isVoter"));
             cookie.set("isVoter", "1");
