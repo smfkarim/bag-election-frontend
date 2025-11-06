@@ -12,7 +12,7 @@ export default function MemberAuth() {
     const { mutateAsync: validateSixDigitCode } =
         useValidateSixDigitKeyMutation();
     const [blocked, setBlocked] = useState(false);
-    const [pin, setPin] = useState("");
+    const [pin, setPin] = useState("111111");
     const [retryCount, setRetryCount] = useState(0);
 
     const handleContinue = async () => {
@@ -30,7 +30,7 @@ export default function MemberAuth() {
         try {
             await validateSixDigitCode({
                 code: pin,
-                deviceId: "123456",
+                device_id: "123456",
             });
 
             cookie.set("isVoter", "1");

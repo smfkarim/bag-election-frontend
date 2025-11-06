@@ -4,8 +4,8 @@ import api from ".";
 
 export const useValidateSixDigitKeyMutation = () =>
     useMutation({
-        mutationKey: ["validate-six-digit-key"],
-        mutationFn: (payload: { deviceId: TForeignId; code: string }) =>
+        // mutationKey: ["validate-six-digit-key"],
+        mutationFn: (payload: { device_id: TForeignId; code: string }) =>
             api.post("/v1/voter/validate", payload),
     });
 

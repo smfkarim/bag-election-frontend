@@ -2,6 +2,7 @@
 
 import { Candidate } from "@/@types/candidate";
 import { useVoteStore } from "@/app/(private)/election/vote/vote.store";
+import { getBucketURL } from "@/lib/helpers";
 import { useGetCandidateList } from "@/services/api/candidate.api";
 import { useGiveVoteMutation } from "@/services/api/voter.api";
 import { Button, Checkbox, Image } from "@mantine/core";
@@ -218,7 +219,7 @@ const CandidateCard = (props: {
             />
             <div className="size-15 rounded-full">
                 <Image
-                    src={props.data?.photo_url}
+                    src={getBucketURL(props.data?.photo_url as string)}
                     alt={props.data.name}
                     className="h-full w-full"
                 />
