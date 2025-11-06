@@ -10,7 +10,7 @@ services:
     container_name: frontend-bag-voting-election
     image: smfkarimbdcalling/bag-voting-front-election:frontend-service-1.0.2
     ports:
-      - 3000:3000
+      - 3030:3000
     networks:
       - web-app-net
 ##End of Scripts
