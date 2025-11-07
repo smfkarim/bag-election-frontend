@@ -30,8 +30,6 @@ export default function VoterDetails() {
         documentTitle: "Ballot Paper",
     });
 
-    console.log(device);
-
     const sendSecretKey = async () => {
         try {
             await sixDigitKeySendEmailMutation.mutateAsync({
@@ -168,7 +166,7 @@ export default function VoterDetails() {
                             src={
                                 voter?.photo_url
                                     ? getBucketURL(voter?.photo_url as string)
-                                    : "https://plus.unsplash.com/premium_photo-1661638006395-76d9c7a9f9fa"
+                                    : "/placeholder.jpg"
                             }
                             className=" h-full w-full object-cover rounded-xl "
                         />

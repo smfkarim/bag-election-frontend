@@ -1,16 +1,16 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
-  --primary: #1e864b;
+    --background: #ffffff;
+    --foreground: #171717;
+    --primary: #1e864b;
 }
 
 @media (prefers-color-scheme: dark) {
-  :root {
-    --foreground: #0a0a0a;
-    --background: #ededed;
-  }
+    :root {
+        --foreground: #0a0a0a;
+        --background: #ededed;
+    }
 }
 
 /* Prevent any dark mode styles from applying */
@@ -21,18 +21,97 @@
 } */
 
 @theme inline {
-  /* Colors */
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --color-primary: var(--primary);
+    /* Colors */
+    --color-background: var(--background);
+    --color-foreground: var(--foreground);
+    --color-primary: var(--primary);
 
-  /* Fonts */
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+    /* Fonts */
+    --font-sans: var(--font-geist-sans);
+    --font-mono: var(--font-geist-mono);
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+    background: var(--background);
+    color: var(--foreground);
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+@media print {
+    body {
+        margin: 0;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+    }
+
+    .print-container {
+        width: 210mm;
+        height: 297mm;
+        overflow: hidden;
+        box-sizing: border-box;
+        page-break-after: avoid;
+        page-break-before: avoid;
+        page-break-inside: avoid;
+        transform-origin: top left;
+    }
+
+    /* Optional: scale down if the content is too tall */
+    .print-container {
+        transform: scale(0.95);
+    }
+
+    /* Avoid page break inside table */
+    table,
+    tr,
+    td,
+    th,
+    thead,
+    tbody {
+        page-break-inside: avoid !important;
+        break-inside: avoid !important;
+    }
+}
+
+@media print {
+    @page {
+        size: A4 portrait;
+        margin: 0;
+    }
+
+    body {
+        margin: 0;
+        padding: 0;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+    }
+
+    .a4-page {
+        width: 210mm;
+        height: 285mm; /* slightly less than full A4 to fit inside printer safe zone */
+        box-sizing: border-box;
+        overflow: hidden;
+
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+
+        page-break-inside: avoid !important;
+        page-break-before: avoid !important;
+        page-break-after: avoid !important;
+        transform-origin: top left;
+        transform: scale(0.96); /* tweak 0.95–0.98 if still breaks */
+    }
+
+    header,
+    footer,
+    main,
+    table,
+    tr,
+    td,
+    th,
+    thead,
+    tbody {
+        break-inside: avoid !important;
+        page-break-inside: avoid !important;
+    }
 }

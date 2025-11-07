@@ -46,7 +46,7 @@ export const authOptions: NextAuthOptions = {
     ],
 
     pages: {
-        signIn: "/auth/poll-officer",
+        signIn: "/auth/polling-officer",
     },
     session: {
         strategy: "jwt",
@@ -75,7 +75,7 @@ export const authOptions: NextAuthOptions = {
         },
     },
 
-    secret: process.env.NEXTAUTH_SECRET,
+    secret: process.env.NEXTAUTH_SECRET ?? "your_very_secret_key",
 };
 
 export const handler = NextAuth(authOptions);

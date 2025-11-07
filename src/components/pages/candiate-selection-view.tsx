@@ -5,7 +5,7 @@ import { useVoteStore } from "@/app/(private)/election/vote/vote.store";
 import { getBucketURL } from "@/lib/helpers";
 import { useGetPanelCandidatesSortedList } from "@/services/api/candidate.api";
 import { useGiveBulkVoteMutation } from "@/services/api/voter.api";
-import { Button, Checkbox, Image } from "@mantine/core";
+import { Button, Checkbox, Image, Skeleton } from "@mantine/core";
 import { modals } from "@mantine/modals";
 import dayjs from "dayjs";
 import { useRouter } from "next/navigation";
@@ -28,9 +28,13 @@ export type TSelection = {
 
 export default function CandidateSelectionView() {
     const router = useRouter();
-
     const { ballotNumber, selectedCandidates, voter_id } = useVoteStore();
     const giveVoteMutation = useGiveBulkVoteMutation();
+
+    const { data, isLoading } = useGetPanelCandidatesSortedList({
+        per_page: 100,
+        page: 1,
+    });
 
     const handleSubmitVote = async () => {
         modals.open({
@@ -39,13 +43,13 @@ export default function CandidateSelectionView() {
             centered: true,
             size: "300px",
             children: (
-                <div className=" flex flex-col items-center space-y-3">
-                    <p className=" text-center p-5 ">
+                <div className="flex flex-col items-center space-y-3">
+                    <p className="text-center p-5">
                         Are you sure to confirm the vote and print the Ballot
-                        Paper ?
+                        Paper?
                     </p>
 
-                    <div className=" flex items-center gap-5">
+                    <div className="flex items-center gap-5">
                         <Button
                             variant="outline"
                             color="red"
@@ -84,19 +88,24 @@ export default function CandidateSelectionView() {
         });
     };
 
-    const { data } = useGetPanelCandidatesSortedList({
-        per_page: 100,
-        page: 1,
-    });
+    // 🧠 Extract data safely
+    const panelA = data?.data?.data?.find((x) => x.panel_name === "Panel A");
+    const panelB = data?.data?.data?.find((x) => x.panel_name === "Panel B");
 
-    const [panelA, panelB] = data?.data?.data || [null, null];
     const panelASorted = panelA?.candidate_types
-        ?.map((x) => ({ a: x.candidates, b: x.candidate_type_name }))
+        ?.map((x) => ({
+            a: x.candidates.sort((a, b) =>
+                a.name.localeCompare(b.name, "en", { sensitivity: "base" })
+            ),
+            b: x.candidate_type_name,
+        }))
         .map((x) => x.a.map((y) => ({ ...y, type: x.b, panelId: 1 })))
         .flat(Infinity);
     const panelBSorted = panelB?.candidate_types
         ?.map((x) => ({
-            a: x.candidates,
+            a: x.candidates.sort((a, b) =>
+                a.name.localeCompare(b.name, "en", { sensitivity: "base" })
+            ),
             b: x.candidate_type_name,
         }))
         .map((x) => x.a.map((y) => ({ ...y, type: x.b, panelId: 2 })))
@@ -104,37 +113,50 @@ export default function CandidateSelectionView() {
 
     return (
         <div className="m-5 max-w-7xl mx-auto space-y-5">
-            {/* Print Button */}
-
-            {/* 🧭 Your original UI remains the same */}
-            <div className="space-y-5">
-                {/* Header */}
-                <div className="flex items-center justify-between px-5 py-2 rounded-2xl bg-green-100">
-                    <div className="size-15">
-                        <Image src={"/bag_logo.png"} alt="bag_logo" />
-                    </div>
-
-                    <h1 className="text-right text-2xl text-green-800 font-semibold">
-                        Ballot Number: {ballotNumber}
-                    </h1>
-                    <div className="sm:text-lg">
-                        <p className="text-right">
-                            {dayjs().format("hh:mm A")}
-                        </p>
-                        <p>{dayjs().format("DD MMMM, YYYY")}</p>
-                    </div>
+            {/* Header */}
+            <div className="flex items-center justify-between px-5 py-2 rounded-2xl bg-green-100">
+                <div className="size-15">
+                    <Image src={"/bag_logo.png"} alt="bag_logo" />
                 </div>
+
+                <h1 className="text-right text-2xl text-green-800 font-semibold">
+                    Ballot Number: {ballotNumber}
+                </h1>
+                <div className="sm:text-lg">
+                    <p className="text-right">{dayjs().format("hh:mm A")}</p>
+                    <p>{dayjs().format("DD MMMM, YYYY")}</p>
+                </div>
+            </div>
+
+            {/* ⏳ Loading Skeleton */}
+            {isLoading ? (
+                <div className="flex gap-10 mt-10">
+                    {[1, 2].map((panel) => (
+                        <div key={panel} className="flex-1 space-y-5">
+                            <Skeleton height={30} width="40%" mx="auto" />
+                            {[...Array(10)].map((_, i) => (
+                                <Skeleton
+                                    key={i}
+                                    height={60}
+                                    radius="xl"
+                                    className="mt-3"
+                                    animate
+                                />
+                            ))}
+                        </div>
+                    ))}
+                </div>
+            ) : (
                 <div>
                     {panelASorted?.length === 0 ||
                     panelBSorted?.length === 0 ? (
-                        <p className=" text-center my-10 ">
+                        <p className="text-center my-10">
                             No candidates available
                         </p>
                     ) : (
                         <div>
-                            {/* Panel Options */}
                             <div
-                                className={`flex  gap-10 ${
+                                className={`flex gap-10 ${
                                     process.env.NEXT_PUBLIC_PANEL_SWAP ===
                                     "true"
                                         ? "flex-row-reverse"
@@ -155,6 +177,9 @@ export default function CandidateSelectionView() {
 
                             <div className="flex justify-center items-center my-10">
                                 <Button
+                                    classNames={{
+                                        root: "disabled:bg-green-800!  disabled:text-white! disabled:opacity-50",
+                                    }}
                                     disabled={selectedCandidates.length !== 15}
                                     onClick={handleSubmitVote}
                                     radius={10}
@@ -167,7 +192,7 @@ export default function CandidateSelectionView() {
                         </div>
                     )}
                 </div>
-            </div>
+            )}
         </div>
     );
 }
@@ -185,9 +210,7 @@ const PanelSection = (props: {
 }) => {
     return (
         <div className="flex-1 space-y-2 mt-5">
-            <div>
-                <h1 className="text-center text-2xl">Panel {props.name}</h1>
-            </div>
+            <h1 className="text-center text-2xl">Panel {props.name}</h1>
             <div
                 className={`p-5 rounded-2xl space-y-3 ${
                     props.color === "red" ? "bg-red-800/10" : "bg-green-800/10"
@@ -219,6 +242,7 @@ const CandidateCard = (props: {
 }) => {
     const { onSelectedCandidatesChanged, selectedCandidates } = useVoteStore();
     const ref = useRef<ComponentRef<typeof Checkbox>>(null);
+
     const data = {
         name: props.data.name,
         type: props.data.type,
@@ -239,7 +263,7 @@ const CandidateCard = (props: {
                     onSelectedCandidatesChanged(!checked, data);
                 }
             }}
-            className={`select-none  flex gap-5 bg-white items-center border rounded-xl px-5 py-2 ${
+            className={`select-none flex gap-5 bg-white items-center border-2 rounded-xl px-5 py-2 ${
                 checked ? "border-green-800" : "border-transparent"
             } ${cardDisable ? "opacity-50" : ""}`}
         >
@@ -260,8 +284,8 @@ const CandidateCard = (props: {
                 />
             </div>
             <div>
-                <h1>{props.data?.name}</h1>
-                <p className="text-xs">{props.data?.type}</p>
+                <h1 className="text-2xl">{props.data?.name}</h1>
+                <p className=" font-semibold">{props.data?.type}</p>
             </div>
         </div>
     );

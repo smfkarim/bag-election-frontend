@@ -110,6 +110,8 @@ export default function Page() {
                                 type={
                                     form.values.method === "email"
                                         ? "email"
+                                        : form.values.method === "national_id"
+                                        ? "number"
                                         : "text"
                                 }
                                 {...form.getInputProps("query")}
@@ -212,7 +214,7 @@ const VoterTable = ({
                                 key={idx}
                                 onClick={() => {
                                     router.push(
-                                        `/poll-officer/voter/${x.uuid}`
+                                        `/polling-officer/voter/${x.uuid}`
                                     );
                                     useVoterStore.setState({ voter: x as any });
                                 }}
