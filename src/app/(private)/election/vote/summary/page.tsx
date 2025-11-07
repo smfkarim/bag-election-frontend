@@ -1,6 +1,6 @@
 "use client";
 import CandidateSelectionPrint from "@/components/pages/candiate-selection-print";
-import { useRouter } from "next/router";
+import { useRouter } from "next/navigation";
 import { useEffect, useRef } from "react";
 import { useReactToPrint } from "react-to-print";
 export default function VoteSummary() {
