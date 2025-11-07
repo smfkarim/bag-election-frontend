@@ -192,7 +192,10 @@ export default function VoterDetails() {
                             value={voter?.voter_id_generated ?? ""}
                         />
                         <LabelValueCard label="Email" value={voter?.email} />
-                        <LabelValueCard label="Address" value={"N/A"} />
+                        <LabelValueCard
+                            label="Address"
+                            value={voter?.address}
+                        />
                     </div>
 
                     {/* Action Buttons */}
@@ -240,11 +243,11 @@ export default function VoterDetails() {
     );
 }
 
-const LabelValueCard = (props: { label: string; value: string }) => {
+const LabelValueCard = (props: { label: string; value?: string }) => {
     return (
         <p>
             <span className=" font-semibold">{props.label} : </span>
-            <span>{props.value}</span>
+            <span>{props.value ?? "N/A"}</span>
         </p>
     );
 };
