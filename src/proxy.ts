@@ -25,14 +25,14 @@ export default withAuth(
         // authentication
         if (!req.nextauth.token || !req.nextauth.token.role)
             return NextResponse.redirect(
-                new URL("/auth/poll-officer", req.url)
+                new URL("/auth/polling-officer", req.url)
             );
 
         // authorization
         const { role } = req.nextauth.token;
 
         const roleBasedRouteMap: Record<RoleEnum, string[]> = {
-            "Poll Officer": ["/poll-officer"],
+            "Poll Officer": ["/polling-officer"],
             "Super Admin": [],
             "Election Commission": [],
             "Panel Admin": [],
@@ -69,7 +69,7 @@ export default withAuth(
  */
 export const config = {
     matcher: [
-        "/poll-officer/:path*", // protect dashboard and its subroutes
+        "/polling-officer/:path*", // protect dashboard and its subroutes
         // "/election/:path*", // protect admin routes
     ],
 };

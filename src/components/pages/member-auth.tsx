@@ -13,7 +13,7 @@ export default function MemberAuth() {
     const { mutateAsync: validateSixDigitCode } =
         useValidateSixDigitKeyMutation();
     const [blocked, setBlocked] = useState(false);
-    const [pin, setPin] = useState("111111");
+    const [pin, setPin] = useState("");
     const [retryCount, setRetryCount] = useState(0);
 
     const handleContinue = async () => {
@@ -34,7 +34,6 @@ export default function MemberAuth() {
                 device_id: "123456",
             });
 
-            console.log(res.data);
             useVoteStore.setState({
                 ballotNumber: res.data?.data.eight_digit_code,
                 voter_id: res.data?.data.voter_id,
@@ -42,9 +41,7 @@ export default function MemberAuth() {
 
             cookie.set("isVoter", "1");
             router.push("/election/vote");
-        } catch (error) {
-            setBlocked(true);
-        }
+        } catch {}
     };
 
     useEffect(() => {
@@ -52,6 +49,19 @@ export default function MemberAuth() {
             setBlocked(true);
         }
     }, [retryCount]);
+
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            useVoteStore.setState({
+                ballotNumber: "",
+                selectedCandidates: [],
+                voter_id: "",
+            });
+            cookie.remove("isVoter");
+        }, 2000);
+
+        return () => clearTimeout(timer);
+    }, []);
 
     return (
         <div className=" shadow-2xl shadow-green-800/40 p-10 rounded-2xl ">
@@ -74,7 +84,7 @@ export default function MemberAuth() {
                              Please contact to the Election Commission.`}
                         </p>
                     ) : (
-                        <p className=" text-xl my-5">Input your code here</p>
+                        <p className=" text-xl ">Input your code here</p>
                     )}
                 </div>
                 <div className=" flex items-center gap-3 relative p-4">
@@ -95,18 +105,14 @@ export default function MemberAuth() {
                                     : "",
                         }}
                     />
-                    {/* <p
-                        className={`text-3xl mx-2 ${
-                            blocked ? "opacity-0" : ""
-                        }`}
-                    >
-                        -
-                    </p> */}
                 </div>
                 <Button
                     type="submit"
                     disabled={pin.length !== 6 || blocked}
                     onClick={handleContinue}
+                    classNames={{
+                        root: "disabled:bg-green-800!  disabled:text-white! disabled:opacity-50",
+                    }}
                     size="lg"
                     radius={20}
                     fullWidth

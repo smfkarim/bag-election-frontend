@@ -1,11 +1,10 @@
 "use client";
 import CandidateSelectionPrint from "@/components/pages/candiate-selection-print";
-import cookie from "js-cookie";
+import { useRouter } from "next/router";
 import { useEffect, useRef } from "react";
 import { useReactToPrint } from "react-to-print";
-import { useVoteStore } from "../vote.store";
-
 export default function VoteSummary() {
+    const router = useRouter();
     const printRef = useRef<HTMLDivElement>(null);
     const reactToPrintFn = useReactToPrint({
         contentRef: printRef,
@@ -15,12 +14,7 @@ export default function VoteSummary() {
     useEffect(() => {
         reactToPrintFn();
         const timer = setTimeout(() => {
-            useVoteStore.setState({
-                ballotNumber: "",
-                selectedCandidates: [],
-                voter_id: "",
-            });
-            cookie.remove("isVoter");
+            router.replace("/");
         }, 2000);
 
         return () => clearTimeout(timer);

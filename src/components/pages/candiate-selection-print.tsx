@@ -14,30 +14,29 @@ export default function CandidateSelectionPrint() {
         page: 1,
     });
 
-    const [panelA, panelB] = data?.data?.data || [null, null];
+    const panelA = data?.data?.data?.find((x) => x.panel_name === "Panel A");
+    const panelB = data?.data?.data?.find((x) => x.panel_name === "Panel B");
     const panelASorted = panelA?.candidate_types
-        ?.map((x) => ({ a: x.candidates, b: x.candidate_type_name }))
+        ?.map((x) => ({
+            a: x.candidates.sort((a, b) =>
+                a.name.localeCompare(b.name, "en", { sensitivity: "base" })
+            ),
+            b: x.candidate_type_name,
+        }))
         .map((x) => x.a.map((y) => ({ ...y, type: x.b, panelId: 1 })))
         .flat(Infinity);
     const panelBSorted = panelB?.candidate_types
         ?.map((x) => ({
-            a: x.candidates,
+            a: x.candidates.sort((a, b) =>
+                a.name.localeCompare(b.name, "en", { sensitivity: "base" })
+            ),
             b: x.candidate_type_name,
         }))
         .map((x) => x.a.map((y) => ({ ...y, type: x.b, panelId: 2 })))
         .flat(Infinity);
 
     return (
-        <div
-            className="bg-white text-black p-10 flex flex-col justify-between"
-            style={{
-                width: "210mm",
-                height: "297mm", // ✅ exact A4 height
-                boxSizing: "border-box",
-                fontFamily: "Arial, sans-serif",
-                // pageBreakAfter: "always",
-            }}
-        >
+        <div className="a4-page bg-white text-black p-10 flex flex-col justify-between">
             {/* HEADER */}
             <header className="flex items-center justify-between border-b pb-3 mb-4 shrink-0">
                 <div className="w-20">
@@ -77,7 +76,7 @@ export default function CandidateSelectionPrint() {
 
             {/* FOOTER */}
             <footer className="text-center text-xs text-gray-500 pt-3 shrink-0">
-                <p>Printed by BAG Voting System</p>
+                <p>System Generated Ballot Paper</p>
             </footer>
         </div>
     );

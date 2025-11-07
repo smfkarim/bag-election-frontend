@@ -16,7 +16,8 @@ export default function VoteLayout(props: PropsWithChildren) {
                 color: "red",
                 message: "Unauthorized access",
             });
-            router.back();
+
+            router.replace("/");
         }
     }, []);
 

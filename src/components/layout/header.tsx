@@ -10,7 +10,7 @@ export default function Header() {
                 onClick={() => {
                     signOut({
                         redirect: true,
-                        callbackUrl: "/auth/poll-officer",
+                        callbackUrl: "/auth/polling-officer",
                     });
                 }}
                 variant="outline"

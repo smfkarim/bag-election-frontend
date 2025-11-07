@@ -32,7 +32,7 @@ export default function UnauthorizedPage() {
                     Go to Home
                 </Link>
                 <Link
-                    href="/auth/poll-officer"
+                    href="/auth/polling-officer"
                     className="flex items-center justify-center gap-2 px-6 py-3 rounded-xl border border-orange-400 text-orange-600 hover:bg-orange-50 font-semibold transition-all duration-200"
                 >
                     Login Again
