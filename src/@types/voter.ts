@@ -102,4 +102,5 @@ export interface Voter {
     panel: null;
     creator: null;
     payment_transactions: null;
+    address?: string;
 }
