@@ -5,11 +5,11 @@ import { useVoteStore } from "@/app/(private)/election/vote/vote.store";
 import { getBucketURL } from "@/lib/helpers";
 import { useGetPanelCandidatesSortedList } from "@/services/api/candidate.api";
 import { useGiveBulkVoteMutation } from "@/services/api/voter.api";
-import { Button, Checkbox, Image, Skeleton } from "@mantine/core";
+import { Button, Image, Skeleton } from "@mantine/core";
 import { modals } from "@mantine/modals";
 import dayjs from "dayjs";
 import { useRouter } from "next/navigation";
-import { ComponentRef, useRef } from "react";
+import { AiOutlineCheck } from "react-icons/ai";
 
 export type TCandidate = {
     id: number;
@@ -24,12 +24,15 @@ export type TSelection = {
     name: string;
     type: string;
     panel: string;
+    uuid: string;
 };
 
 export default function CandidateSelectionView() {
     const router = useRouter();
     const { ballotNumber, selectedCandidates, voter_id } = useVoteStore();
     const giveVoteMutation = useGiveBulkVoteMutation();
+
+    console.log(selectedCandidates.length, "LENGTH");
 
     const { data, isLoading } = useGetPanelCandidatesSortedList({
         per_page: 100,
@@ -205,6 +208,7 @@ const PanelSection = (props: {
         type: string;
         id: TForeignId;
         photo_url: string;
+        uuid: string;
     }[];
     color: "red" | "green";
 }) => {
@@ -237,11 +241,11 @@ const CandidateCard = (props: {
         type: string;
         id: TForeignId;
         photo_url: string;
+        uuid: string;
     };
     index: number;
 }) => {
-    const { onSelectedCandidatesChanged, selectedCandidates } = useVoteStore();
-    const ref = useRef<ComponentRef<typeof Checkbox>>(null);
+    const { selectedCandidates } = useVoteStore();
 
     const data = {
         name: props.data.name,
@@ -251,31 +255,49 @@ const CandidateCard = (props: {
         id: Number(props.data.id),
     };
 
-    const checked = !!selectedCandidates?.find((x) => x.id === props.data.id);
-    const disabled = !!selectedCandidates.find((x) => x.index === data.index);
+    const checked = !!selectedCandidates?.find(
+        (x) => x.uuid === props.data.uuid
+    );
+    const disabled =
+        selectedCandidates?.length === 0
+            ? false
+            : !!selectedCandidates.find((x) => x.index === data.index);
     const cardDisable = !checked && disabled;
 
     return (
         <div
             onClick={(e) => {
                 e.preventDefault();
-                if (!cardDisable) {
-                    onSelectedCandidatesChanged(!checked, data);
-                }
+                if (cardDisable) return;
+                useVoteStore.setState({
+                    selectedCandidates: checked
+                        ? selectedCandidates.filter(
+                              (x) => x.uuid !== props.data.uuid
+                          )
+                        : selectedCandidates.concat({
+                              id: Number(props.data.id),
+                              index: props.index,
+                              type: props.data.type,
+                              uuid: props.data?.uuid,
+                              name: props.data.name,
+                          }),
+                });
             }}
             className={`select-none flex gap-5 bg-white items-center border-2 rounded-xl px-5 py-2 ${
                 checked ? "border-green-800" : "border-transparent"
             } ${cardDisable ? "opacity-50" : ""}`}
         >
-            <Checkbox
-                ref={ref}
-                disabled={cardDisable}
-                size="md"
-                checked={checked}
-                onChange={(e) =>
-                    onSelectedCandidatesChanged(e.target.checked, data)
-                }
-            />
+            <div
+                className={`border-2 rounded-lg ${
+                    checked ? "border-primary" : " border-gray-400"
+                }`}
+            >
+                <AiOutlineCheck
+                    className={` text-primary size-10 ${
+                        checked ? "" : "opacity-0"
+                    }`}
+                />
+            </div>
             <div className="size-25 rounded-full">
                 <Image
                     src={getBucketURL(props.data?.photo_url as string)}

@@ -12,9 +12,9 @@ export default function VoteSummary() {
     });
 
     useEffect(() => {
-        reactToPrintFn();
+        // reactToPrintFn();
         const timer = setTimeout(() => {
-            router.replace("/");
+            // router.replace("/");
         }, 2000);
 
         return () => clearTimeout(timer);

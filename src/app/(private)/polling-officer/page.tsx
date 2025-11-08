@@ -10,18 +10,14 @@ import { Button, Loader, Select, TextInput } from "@mantine/core";
 import { useForm } from "@mantine/form";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { FiSearch } from "react-icons/fi";
 import { MdOutlinePersonOff } from "react-icons/md";
 
-type SearchMethod =
-    | "national_id"
-    | "email"
-    | "phone"
-    | "first_name"
-    | "last_name";
+type SearchMethod = "national_id" | "email" | "phone" | "full_name";
 
 export default function Page() {
+    const router = useRouter();
     const [searchParams, setSearchParams] = useState<{
         type: SearchMethod;
         query: string;
@@ -47,6 +43,14 @@ export default function Page() {
     const handleSearch = (values: typeof form.values) => {
         setSearchParams({ type: values.method, query: values.query });
     };
+
+    useEffect(() => {
+        if (data?.data?.voters?.length === 1) {
+            let x = data?.data?.voters[0];
+            router.push(`/polling-officer/voter/${x.uuid}`);
+            useVoterStore.setState({ voter: x as any });
+        }
+    }, [data]);
 
     return (
         <CenterWrapper>
@@ -81,16 +85,15 @@ export default function Page() {
                                 placeholder="Select Search Method"
                                 data={[
                                     {
-                                        label: "National ID / Driving License (Last 5 Digits)",
+                                        label: "ID / Driving License (Last 5 Digits)",
                                         value: "national_id",
                                     },
                                     { label: "Email", value: "email" },
                                     { label: "Phone", value: "phone" },
                                     {
-                                        label: "First Name",
-                                        value: "first_name",
+                                        label: "Full Name",
+                                        value: "full_name",
                                     },
-                                    { label: "Last Name", value: "last_name" },
                                 ]}
                                 {...form.getInputProps("method")}
                             />
@@ -98,13 +101,11 @@ export default function Page() {
                             <TextInput
                                 placeholder={
                                     form.values.method === "national_id"
-                                        ? "Enter National ID / Driving License (Last 5 Digits)"
+                                        ? "Enter ID / Driving License (Last 5 Digits)"
                                         : form.values.method === "email"
                                         ? "Enter Email Address"
-                                        : form.values.method === "first_name"
-                                        ? "Enter First Name"
-                                        : form.values.method === "last_name"
-                                        ? "Enter Last Name"
+                                        : form.values.method === "full_name"
+                                        ? "Enter Full Name"
                                         : "Enter Phone Number"
                                 }
                                 type={
@@ -140,11 +141,14 @@ export default function Page() {
                             <VoterTable
                                 columns={[
                                     {
+                                        label: "ID/Driver's License",
+                                        key: "national_id",
+                                    },
+                                    {
                                         label: "Voter ID",
                                         key: "voter_id_generated",
                                     },
-                                    { label: "First Name", key: "first_name" },
-                                    { label: "Last Name", key: "last_name" },
+                                    { label: "Full Name", key: "full_name" },
                                     { label: "Email", key: "email" },
                                     { label: "Phone", key: "phone" },
                                 ]}
@@ -188,26 +192,21 @@ const VoterTable = ({
 
     return (
         <div className="border border-gray-200 rounded-lg overflow-hidden">
-            <div className="overflow-x-auto">
+            <div className="overflow-x-auto max-h-60 overflow-y-auto">
                 <table className="w-full text-sm text-left border-collapse">
                     <thead className="bg-primary text-white sticky top-0 z-10">
                         <tr>
                             {columns.map((col) => (
                                 <th
                                     key={col.key}
-                                    className="px-4 py-3 font-medium border-b border-primary/20"
+                                    className="px-4 py-3 font-medium border-b border-primary/20 bg-primary sticky top-0"
                                 >
                                     {col.label}
                                 </th>
                             ))}
                         </tr>
                     </thead>
-                </table>
-            </div>
 
-            {/* Scrollable body */}
-            <div className="max-h-40 overflow-y-auto overflow-x-auto">
-                <table className="w-full text-sm text-left border-collapse">
                     <tbody>
                         {rows.map((x, idx) => (
                             <tr

@@ -177,7 +177,9 @@ export default function VoterDetails() {
                     <div className=" bg-white px-10 py-10 rounded-2xl shadow-xl grid grid-cols-1  sm:grid-cols-2 gap-5">
                         <LabelValueCard
                             label="Name"
-                            value={voter?.first_name + voter?.last_name}
+                            value={`${voter?.first_name} ${
+                                voter?.middle_name ?? ""
+                            } ${voter?.last_name}`}
                         />
                         <LabelValueCard
                             label="Photo ID"

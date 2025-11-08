@@ -7,7 +7,7 @@ import { Image } from "@mantine/core";
 import dayjs from "dayjs";
 
 export default function CandidateSelectionPrint() {
-    const { ballotNumber, selectedCandidates } = useVoteStore();
+    const { ballotNumber } = useVoteStore();
 
     const { data } = useGetPanelCandidatesSortedList({
         per_page: 100,
@@ -64,13 +64,11 @@ export default function CandidateSelectionPrint() {
                     title="Panel A"
                     color="green"
                     list={(panelASorted as any) ?? []}
-                    selected={selectedCandidates}
                 />
                 <PanelPrint
                     title="Panel B"
                     color="red"
                     list={(panelBSorted as any) ?? []}
-                    selected={selectedCandidates}
                 />
             </main>
 
@@ -86,7 +84,6 @@ const PanelPrint = ({
     title,
     color,
     list,
-    selected,
 }: {
     title: string;
     color: "red" | "green";
@@ -96,9 +93,12 @@ const PanelPrint = ({
         type: string;
         id: TForeignId;
         photo_url: string;
+        uuid: string;
     }[];
-    selected: any[];
 }) => {
+    const selectedCandidates = useVoteStore(
+        (state) => state.selectedCandidates
+    );
     return (
         <div className="border border-gray-400 rounded-md p-3 flex flex-col h-full">
             <h2
@@ -120,9 +120,11 @@ const PanelPrint = ({
                 </thead>
                 <tbody>
                     {list.map((c, i) => {
-                        const isChecked = !!selected.find((s) => s.id === c.id);
+                        const isChecked = !!selectedCandidates.find(
+                            (s) => s.uuid === c.uuid
+                        );
                         return (
-                            <tr key={c.id} className=" border-b">
+                            <tr key={i} className=" border-b">
                                 <td className="p-1">{i + 1}</td>
                                 <td className="p-1">{c.name}</td>
                                 <td className="p-1 text-gray-600">
