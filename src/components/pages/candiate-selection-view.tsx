@@ -3,7 +3,7 @@
 import { TForeignId } from "@/@types";
 import { useVoteStore } from "@/app/(private)/election/vote/vote.store";
 import { getBucketURL } from "@/lib/helpers";
-import { useGetPanelCandidatesSortedList } from "@/services/api/candidate.api";
+import { useGetPanelWiseCandidates } from "@/services/api/candidate.api";
 import { useGiveBulkVoteMutation } from "@/services/api/voter.api";
 import { Button, Image, Skeleton } from "@mantine/core";
 import { modals } from "@mantine/modals";
@@ -31,13 +31,6 @@ export default function CandidateSelectionView() {
     const router = useRouter();
     const { ballotNumber, selectedCandidates, voter_id } = useVoteStore();
     const giveVoteMutation = useGiveBulkVoteMutation();
-
-    console.log(selectedCandidates.length, "LENGTH");
-
-    const { data, isLoading } = useGetPanelCandidatesSortedList({
-        per_page: 100,
-        page: 1,
-    });
 
     const handleSubmitVote = async () => {
         modals.open({
@@ -67,7 +60,7 @@ export default function CandidateSelectionView() {
                                 e.preventDefault();
                                 try {
                                     const ids = selectedCandidates?.map(
-                                        (x) => x.id
+                                        (x) => x.uuid
                                     );
                                     await giveVoteMutation.mutateAsync({
                                         candidate_ids: ids,
@@ -77,7 +70,9 @@ export default function CandidateSelectionView() {
                                     });
 
                                     modals.closeAll();
-                                    router.push("/election/vote/summary");
+                                    router.push(
+                                        `/election/vote/summary/${ballotNumber}`
+                                    );
                                 } catch {
                                     console.log("E");
                                 }
@@ -92,27 +87,7 @@ export default function CandidateSelectionView() {
     };
 
     // 🧠 Extract data safely
-    const panelA = data?.data?.data?.find((x) => x.panel_name === "Panel A");
-    const panelB = data?.data?.data?.find((x) => x.panel_name === "Panel B");
-
-    const panelASorted = panelA?.candidate_types
-        ?.map((x) => ({
-            a: x.candidates.sort((a, b) =>
-                a.name.localeCompare(b.name, "en", { sensitivity: "base" })
-            ),
-            b: x.candidate_type_name,
-        }))
-        .map((x) => x.a.map((y) => ({ ...y, type: x.b, panelId: 1 })))
-        .flat(Infinity);
-    const panelBSorted = panelB?.candidate_types
-        ?.map((x) => ({
-            a: x.candidates.sort((a, b) =>
-                a.name.localeCompare(b.name, "en", { sensitivity: "base" })
-            ),
-            b: x.candidate_type_name,
-        }))
-        .map((x) => x.a.map((y) => ({ ...y, type: x.b, panelId: 2 })))
-        .flat(Infinity);
+    const { panelA, panelB, isLoading } = useGetPanelWiseCandidates();
 
     return (
         <div className="m-5 max-w-7xl mx-auto space-y-5">
@@ -151,8 +126,7 @@ export default function CandidateSelectionView() {
                 </div>
             ) : (
                 <div>
-                    {panelASorted?.length === 0 ||
-                    panelBSorted?.length === 0 ? (
+                    {panelA?.length === 0 || panelB?.length === 0 ? (
                         <p className="text-center my-10">
                             No candidates available
                         </p>
@@ -167,12 +141,12 @@ export default function CandidateSelectionView() {
                                 }`}
                             >
                                 <PanelSection
-                                    candidateList={(panelASorted as any) ?? []}
+                                    candidateList={(panelA as any) ?? []}
                                     name="A"
                                     color="green"
                                 />
                                 <PanelSection
-                                    candidateList={(panelBSorted as any) ?? []}
+                                    candidateList={(panelB as any) ?? []}
                                     name="B"
                                     color="red"
                                 />
@@ -275,11 +249,8 @@ const CandidateCard = (props: {
                               (x) => x.uuid !== props.data.uuid
                           )
                         : selectedCandidates.concat({
-                              id: Number(props.data.id),
                               index: props.index,
-                              type: props.data.type,
-                              uuid: props.data?.uuid,
-                              name: props.data.name,
+                              uuid: props.data.uuid,
                           }),
                 });
             }}

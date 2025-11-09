@@ -6,8 +6,7 @@ import { useGetPanelWiseCandidates } from "@/services/api/candidate.api";
 import { Image } from "@mantine/core";
 import dayjs from "dayjs";
 
-export default function CandidateSelectionPrint() {
-    const { ballotNumber } = useVoteStore();
+export default function CandidateResult() {
     const { panelA, panelB } = useGetPanelWiseCandidates();
 
     return (
@@ -22,9 +21,6 @@ export default function CandidateSelectionPrint() {
                     <h1 className="text-2xl font-bold text-green-800 uppercase">
                         Official Ballot Paper
                     </h1>
-                    <p className="text-sm text-gray-700">
-                        Ballot Number: {ballotNumber || "—"}
-                    </p>
                 </div>
 
                 <div className="text-right text-sm">
@@ -96,7 +92,7 @@ const PanelPrint = ({
                 <tbody>
                     {list.map((c, i) => {
                         const isChecked = !!selectedCandidates.find(
-                            (x) => x.uuid === c.uuid
+                            (s) => s.uuid === c.uuid
                         );
                         return (
                             <tr key={i} className=" border-b">

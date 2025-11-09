@@ -3,12 +3,44 @@
 import { TForeignId } from "@/@types";
 import { useVoteStore } from "@/app/(private)/election/vote/vote.store";
 import { useGetPanelWiseCandidates } from "@/services/api/candidate.api";
+import { useGetBallotInfoMutation } from "@/services/api/vote.api";
 import { Image } from "@mantine/core";
 import dayjs from "dayjs";
+import { useParams } from "next/navigation";
+import { useEffect, useState } from "react";
 
-export default function CandidateSelectionPrint() {
-    const { ballotNumber } = useVoteStore();
-    const { panelA, panelB } = useGetPanelWiseCandidates();
+export default function VoteSummary() {
+    const { ballotNumber }: { ballotNumber: string } = useParams();
+    //vote
+    const [isLoading, setIsLoading] = useState(true);
+    const { selectedCandidates } = useVoteStore();
+    const { panelA, panelB, ...panelReq } = useGetPanelWiseCandidates();
+    const { mutateAsync: getBallotInfo } = useGetBallotInfoMutation();
+
+    useEffect(() => {
+        getBallotInfo(ballotNumber)
+            .then((info) => {
+                useVoteStore.setState({
+                    selectedCandidates: info.data.data.map((x, idx) => ({
+                        index: idx,
+                        uuid: x.candidate_id,
+                    })),
+                });
+                console.log(info, "INFO");
+            })
+            .finally(() => {
+                setIsLoading(false);
+            })
+            .catch(() => {
+                useVoteStore.setState({
+                    selectedCandidates: [],
+                });
+            });
+        // useVoteStore.setState({});
+    }, []);
+
+    if (isLoading || panelReq.isLoading) return null;
+    if (selectedCandidates.length === 0) return <p>Invalid ballot</p>;
 
     return (
         <div className="a4-page bg-white text-black p-10 flex flex-col justify-between">
@@ -96,10 +128,10 @@ const PanelPrint = ({
                 <tbody>
                     {list.map((c, i) => {
                         const isChecked = !!selectedCandidates.find(
-                            (x) => x.uuid === c.uuid
+                            (s) => s.uuid === c.uuid
                         );
                         return (
-                            <tr key={i} className=" border-b">
+                            <tr key={i} className=" border-b last:border-none">
                                 <td className="p-1">{i + 1}</td>
                                 <td className="p-1">{c.name}</td>
                                 <td className="p-1 text-gray-600">

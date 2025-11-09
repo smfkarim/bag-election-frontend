@@ -1,9 +1,9 @@
 "use client";
-import CandidateSelectionPrint from "@/components/pages/candiate-selection-print";
+import VoteSummary from "@/components/pages/vote-summary";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef } from "react";
 import { useReactToPrint } from "react-to-print";
-export default function VoteSummary() {
+export default function Page() {
     const router = useRouter();
     const printRef = useRef<HTMLDivElement>(null);
     const reactToPrintFn = useReactToPrint({
@@ -12,8 +12,8 @@ export default function VoteSummary() {
     });
 
     useEffect(() => {
-        // reactToPrintFn();
         const timer = setTimeout(() => {
+            // reactToPrintFn();
             // router.replace("/");
         }, 2000);
 
@@ -22,7 +22,7 @@ export default function VoteSummary() {
 
     return (
         <div className=" flex justify-center items-center" ref={printRef}>
-            <CandidateSelectionPrint />
+            <VoteSummary />
         </div>
     );
 }

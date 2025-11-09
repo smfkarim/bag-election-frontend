@@ -5,7 +5,6 @@ import {
     useMutation,
     useQuery,
 } from "@tanstack/react-query";
-import { AxiosResponse } from "axios";
 import api from ".";
 
 export const useVoterSearchQuery = (
@@ -17,7 +16,7 @@ export const useVoterSearchQuery = (
         query: string;
     },
     options?: Omit<
-        UndefinedInitialDataOptions<AxiosResponse<VoterSearchResponse>>,
+        UndefinedInitialDataOptions<VoterSearchResponse>,
         "queryKey" | "queryFn"
     >
 ) =>

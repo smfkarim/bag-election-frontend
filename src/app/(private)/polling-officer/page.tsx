@@ -45,8 +45,8 @@ export default function Page() {
     };
 
     useEffect(() => {
-        if (data?.data?.voters?.length === 1) {
-            let x = data?.data?.voters[0];
+        if (data?.voters?.length === 1) {
+            let x = data?.voters[0];
             router.push(`/polling-officer/voter/${x.uuid}`);
             useVoterStore.setState({ voter: x as any });
         }
@@ -152,7 +152,7 @@ export default function Page() {
                                     { label: "Email", key: "email" },
                                     { label: "Phone", key: "phone" },
                                 ]}
-                                rows={data?.data?.voters ?? []}
+                                rows={data?.voters ?? []}
                             />
                         )}
 
@@ -224,7 +224,12 @@ const VoterTable = ({
                                         key={col.key}
                                         className="px-4 py-2 border-b border-gray-100"
                                     >
-                                        {x[col.key as keyof typeof x] ?? "N/A"}
+                                        {col.key === "full_name"
+                                            ? `${x.first_name} ${
+                                                  x.middle_name ?? ""
+                                              } ${x.last_name}`
+                                            : x[col.key as keyof typeof x] ??
+                                              "N/A"}
                                     </td>
                                 ))}
                             </tr>

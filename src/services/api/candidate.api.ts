@@ -53,12 +53,15 @@ interface CandidateType {
     candidates: TCandidate[];
 }
 
-interface TCandidate {
+export interface TCandidate {
     id: number;
     uuid: string;
     name: string;
     code: string;
     photo_url: string;
+    digital_votes?: number;
+    manual_votes?: number;
+    total_votes?: number;
 }
 
 // export const useCandidateUpdateMutation = () => {
@@ -150,3 +153,78 @@ interface TCandidate {
 //         },
 //     });
 // };
+
+export const useGetPanelWiseCandidates = () => {
+    const { data, isLoading } = useGetPanelCandidatesSortedList({
+        per_page: 100,
+        page: 1,
+    });
+
+    const panelA = data?.data?.data?.find((x) => x.panel_name === "Panel A");
+    const panelB = data?.data?.data?.find((x) => x.panel_name === "Panel B");
+    const panelASorted = panelA?.candidate_types
+        ?.map((x) => ({
+            a: x.candidates.sort((a, b) =>
+                a.name.localeCompare(b.name, "en", { sensitivity: "base" })
+            ),
+            b: x.candidate_type_name,
+        }))
+        .map((x) => x.a.map((y) => ({ ...y, type: x.b, panelId: 1 })))
+        .flat(Infinity);
+    const panelBSorted = panelB?.candidate_types
+        ?.map((x) => ({
+            a: x.candidates.sort((a, b) =>
+                a.name.localeCompare(b.name, "en", { sensitivity: "base" })
+            ),
+            b: x.candidate_type_name,
+        }))
+        .map((x) => x.a.map((y) => ({ ...y, type: x.b, panelId: 2 })))
+        .flat(Infinity);
+
+    return {
+        isLoading,
+        panelA: panelASorted,
+        panelB: panelBSorted,
+    };
+};
+
+export const useGetPanelWiseVoteCountList = () => {
+    const { data, isLoading } = useQuery({
+        queryKey: ["candidate-vote"],
+        queryFn: () =>
+            axios.get<ListResponse<PanelCandidates>>(
+                `${process.env.NEXT_PUBLIC_ADMIN_API_URL}/v1/election/candidates-vote-count?per_page=100`
+            ),
+    });
+
+    const panelA = data?.data?.data?.data?.find(
+        (x) => x.panel_name === "Panel A"
+    );
+    const panelB = data?.data?.data?.data?.find(
+        (x) => x.panel_name === "Panel B"
+    );
+    const panelASorted = panelA?.candidate_types
+        ?.map((x) => ({
+            a: x.candidates.sort((a, b) =>
+                a.name.localeCompare(b.name, "en", { sensitivity: "base" })
+            ),
+            b: x.candidate_type_name,
+        }))
+        .map((x) => x.a.map((y) => ({ ...y, type: x.b, panelId: 1 })))
+        .flat(Infinity);
+    const panelBSorted = panelB?.candidate_types
+        ?.map((x) => ({
+            a: x.candidates.sort((a, b) =>
+                a.name.localeCompare(b.name, "en", { sensitivity: "base" })
+            ),
+            b: x.candidate_type_name,
+        }))
+        .map((x) => x.a.map((y) => ({ ...y, type: x.b, panelId: 2 })))
+        .flat(Infinity);
+
+    return {
+        isLoading,
+        panelA: panelASorted,
+        panelB: panelBSorted,
+    };
+};

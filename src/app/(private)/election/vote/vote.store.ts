@@ -1,17 +1,11 @@
 import { secureStorage } from "@/store/auth-store";
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
-export type TSelection = {
-    id: number;
-    index: number;
-    name: string;
-    type: string;
-    uuid: string;
-};
+
 interface TVoteStore {
     voter_id: string;
     ballotNumber: string;
-    selectedCandidates: TSelection[];
+    selectedCandidates: { index: number; uuid: string }[];
 }
 export const useVoteStore = create<TVoteStore>()(
     persist(
