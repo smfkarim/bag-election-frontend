@@ -1,5 +1,6 @@
 "use client";
 import VoteSummary from "@/components/pages/vote-summary";
+import { Button } from "@mantine/core";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef } from "react";
 import { useReactToPrint } from "react-to-print";
@@ -21,8 +22,15 @@ export default function Page() {
     }, []);
 
     return (
-        <div className=" flex justify-center items-center" ref={printRef}>
-            <VoteSummary />
+        <div className=" max-w-5xl mx-auto pt-10">
+            <div className=" flex justify-end ">
+                <Button color="red" onClick={reactToPrintFn}>
+                    Print
+                </Button>
+            </div>
+            <div className=" flex justify-center items-center" ref={printRef}>
+                <VoteSummary />
+            </div>
         </div>
     );
 }
