@@ -29,6 +29,8 @@ export default function VoterDetails() {
         contentRef: printRef,
         documentTitle: "Ballot Paper",
     });
+    const [boothId, setBoothId] = useState<null | string>(null);
+    const [secretKeyShown, setSecretKeyShown] = useState(false);
 
     const sendSecretKey = async () => {
         try {
@@ -177,7 +179,9 @@ export default function VoterDetails() {
                     <div className=" bg-white px-10 py-10 rounded-2xl shadow-xl grid grid-cols-1  sm:grid-cols-2 gap-5">
                         <LabelValueCard
                             label="Name"
-                            value={voter?.first_name + voter?.last_name}
+                            value={`${voter?.first_name} ${
+                                voter?.middle_name ?? ""
+                            } ${voter?.last_name}`}
                         />
                         <LabelValueCard
                             label="Photo ID"
@@ -199,10 +203,25 @@ export default function VoterDetails() {
                     </div>
 
                     {/* Action Buttons */}
-                    <div className=" flex justify-center gap-5 mt-10">
+                    {/* <div className="flex items-center justify-center mt-10">
+                        <Select placeholder="Select booth" />
+                    </div> */}
+                    <div className=" flex justify-center gap-5 ">
+                        <Button
+                            onClick={() => setSecretKeyShown((v) => !v)}
+                            radius={15}
+                            // disabled={!boothId}
+                        >
+                            {secretKeyShown
+                                ? voter.secret_key
+                                : "Show Secret Key"}
+                        </Button>
                         <Button
                             loading={sixDigitKeySendEmailMutation.isPending}
-                            disabled={ballotPrinted}
+                            disabled={
+                                ballotPrinted
+                                // || !boothId
+                            }
                             onClick={sendSecretKey}
                             leftSection={<AiOutlineSend size={16} />}
                             radius={15}
@@ -211,7 +230,10 @@ export default function VoterDetails() {
                         </Button>
                         <Button
                             loading={sixDigitKeyPrintMutation.isPending}
-                            disabled={ballotPrinted}
+                            disabled={
+                                ballotPrinted
+                                // || !boothId
+                            }
                             onClick={printSecretKey}
                             leftSection={<AiOutlineKey size={16} />}
                             radius={15}

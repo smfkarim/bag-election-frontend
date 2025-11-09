@@ -103,4 +103,6 @@ export interface Voter {
     creator: null;
     payment_transactions: null;
     address?: string;
+    secret_key: string;
+    booth_id: null | string;
 }

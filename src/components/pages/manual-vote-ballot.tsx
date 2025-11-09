@@ -2,16 +2,24 @@
 
 import { TForeignId } from "@/@types";
 import { useVoteStore } from "@/app/(private)/election/vote/vote.store";
+import { getBucketURL } from "@/lib/helpers";
 import { useGetPanelWiseCandidates } from "@/services/api/candidate.api";
 import { Image } from "@mantine/core";
 import dayjs from "dayjs";
+import { useParams } from "next/navigation";
+import { useEffect } from "react";
 
-export default function CandidateSelectionPrint() {
-    const { ballotNumber } = useVoteStore();
+export default function ManualVoteBallot() {
+    const { ballotNumber }: { ballotNumber: string } = useParams();
+    //vote
     const { panelA, panelB } = useGetPanelWiseCandidates();
 
+    useEffect(() => {
+        // useVoteStore.setState({});
+    }, []);
+
     return (
-        <div className="a4-page bg-white text-black p-10 flex flex-col justify-between">
+        <div className="a4-page bg-white text-black p-10  flex flex-col justify-between">
             {/* HEADER */}
             <header className="flex items-center justify-between border-b pb-3 mb-4 shrink-0">
                 <div className="w-20">
@@ -88,6 +96,7 @@ const PanelPrint = ({
                 <thead className=" border-b ">
                     <tr className="">
                         <th className="p-1 w-6 text-left">#</th>
+                        <th className="p-1 w-6 text-left">Photo</th>
                         <th className="p-1 text-left">Candidate</th>
                         <th className="p-1 text-left">Type</th>
                         <th className="p-1 w-6 text-center">✓</th>
@@ -96,17 +105,28 @@ const PanelPrint = ({
                 <tbody>
                     {list.map((c, i) => {
                         const isChecked = !!selectedCandidates.find(
-                            (x) => x.uuid === c.uuid
+                            (s) => s.uuid === c.uuid
                         );
                         return (
-                            <tr key={i} className=" border-b">
+                            <tr
+                                key={i}
+                                className=" border-b last:border-none h-10"
+                            >
                                 <td className="p-1">{i + 1}</td>
-                                <td className="p-1">{c.name}</td>
-                                <td className="p-1 text-gray-600">
+                                <td>
+                                    <div className=" size-10 my-1 mx-auto">
+                                        <Image
+                                            className=" object-contain object-top h-full w-full"
+                                            src={getBucketURL(c.photo_url)}
+                                        />
+                                    </div>
+                                </td>
+                                <td className="p-1 text-xs">{c.name}</td>
+                                <td className="p-1 text-xs text-gray-600">
                                     {c.type ?? ""}
                                 </td>
                                 <td className="p-1 text-center">
-                                    {isChecked ? "✔️" : ""}
+                                    <div className="border size-6 rounded-sm" />
                                 </td>
                             </tr>
                         );

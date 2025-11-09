@@ -3,13 +3,13 @@
 import { TForeignId } from "@/@types";
 import { useVoteStore } from "@/app/(private)/election/vote/vote.store";
 import { getBucketURL } from "@/lib/helpers";
-import { useGetPanelCandidatesSortedList } from "@/services/api/candidate.api";
+import { useGetPanelWiseCandidates } from "@/services/api/candidate.api";
 import { useGiveBulkVoteMutation } from "@/services/api/voter.api";
-import { Button, Checkbox, Image, Skeleton } from "@mantine/core";
+import { Button, Image, Skeleton } from "@mantine/core";
 import { modals } from "@mantine/modals";
 import dayjs from "dayjs";
 import { useRouter } from "next/navigation";
-import { ComponentRef, useRef } from "react";
+import { AiOutlineCheck } from "react-icons/ai";
 
 export type TCandidate = {
     id: number;
@@ -24,17 +24,13 @@ export type TSelection = {
     name: string;
     type: string;
     panel: string;
+    uuid: string;
 };
 
 export default function CandidateSelectionView() {
     const router = useRouter();
     const { ballotNumber, selectedCandidates, voter_id } = useVoteStore();
     const giveVoteMutation = useGiveBulkVoteMutation();
-
-    const { data, isLoading } = useGetPanelCandidatesSortedList({
-        per_page: 100,
-        page: 1,
-    });
 
     const handleSubmitVote = async () => {
         modals.open({
@@ -64,7 +60,7 @@ export default function CandidateSelectionView() {
                                 e.preventDefault();
                                 try {
                                     const ids = selectedCandidates?.map(
-                                        (x) => x.id
+                                        (x) => x.uuid
                                     );
                                     await giveVoteMutation.mutateAsync({
                                         candidate_ids: ids,
@@ -74,7 +70,9 @@ export default function CandidateSelectionView() {
                                     });
 
                                     modals.closeAll();
-                                    router.push("/election/vote/summary");
+                                    router.push(
+                                        `/election/vote/summary/${ballotNumber}`
+                                    );
                                 } catch {
                                     console.log("E");
                                 }
@@ -89,27 +87,7 @@ export default function CandidateSelectionView() {
     };
 
     // 🧠 Extract data safely
-    const panelA = data?.data?.data?.find((x) => x.panel_name === "Panel A");
-    const panelB = data?.data?.data?.find((x) => x.panel_name === "Panel B");
-
-    const panelASorted = panelA?.candidate_types
-        ?.map((x) => ({
-            a: x.candidates.sort((a, b) =>
-                a.name.localeCompare(b.name, "en", { sensitivity: "base" })
-            ),
-            b: x.candidate_type_name,
-        }))
-        .map((x) => x.a.map((y) => ({ ...y, type: x.b, panelId: 1 })))
-        .flat(Infinity);
-    const panelBSorted = panelB?.candidate_types
-        ?.map((x) => ({
-            a: x.candidates.sort((a, b) =>
-                a.name.localeCompare(b.name, "en", { sensitivity: "base" })
-            ),
-            b: x.candidate_type_name,
-        }))
-        .map((x) => x.a.map((y) => ({ ...y, type: x.b, panelId: 2 })))
-        .flat(Infinity);
+    const { panelA, panelB, isLoading } = useGetPanelWiseCandidates();
 
     return (
         <div className="m-5 max-w-7xl mx-auto space-y-5">
@@ -148,8 +126,7 @@ export default function CandidateSelectionView() {
                 </div>
             ) : (
                 <div>
-                    {panelASorted?.length === 0 ||
-                    panelBSorted?.length === 0 ? (
+                    {panelA?.length === 0 || panelB?.length === 0 ? (
                         <p className="text-center my-10">
                             No candidates available
                         </p>
@@ -164,12 +141,12 @@ export default function CandidateSelectionView() {
                                 }`}
                             >
                                 <PanelSection
-                                    candidateList={(panelASorted as any) ?? []}
+                                    candidateList={(panelA as any) ?? []}
                                     name="A"
                                     color="green"
                                 />
                                 <PanelSection
-                                    candidateList={(panelBSorted as any) ?? []}
+                                    candidateList={(panelB as any) ?? []}
                                     name="B"
                                     color="red"
                                 />
@@ -205,6 +182,7 @@ const PanelSection = (props: {
         type: string;
         id: TForeignId;
         photo_url: string;
+        uuid: string;
     }[];
     color: "red" | "green";
 }) => {
@@ -237,11 +215,11 @@ const CandidateCard = (props: {
         type: string;
         id: TForeignId;
         photo_url: string;
+        uuid: string;
     };
     index: number;
 }) => {
-    const { onSelectedCandidatesChanged, selectedCandidates } = useVoteStore();
-    const ref = useRef<ComponentRef<typeof Checkbox>>(null);
+    const { selectedCandidates } = useVoteStore();
 
     const data = {
         name: props.data.name,
@@ -251,31 +229,46 @@ const CandidateCard = (props: {
         id: Number(props.data.id),
     };
 
-    const checked = !!selectedCandidates?.find((x) => x.id === props.data.id);
-    const disabled = !!selectedCandidates.find((x) => x.index === data.index);
+    const checked = !!selectedCandidates?.find(
+        (x) => x.uuid === props.data.uuid
+    );
+    const disabled =
+        selectedCandidates?.length === 0
+            ? false
+            : !!selectedCandidates.find((x) => x.index === data.index);
     const cardDisable = !checked && disabled;
 
     return (
         <div
             onClick={(e) => {
                 e.preventDefault();
-                if (!cardDisable) {
-                    onSelectedCandidatesChanged(!checked, data);
-                }
+                if (cardDisable) return;
+                useVoteStore.setState({
+                    selectedCandidates: checked
+                        ? selectedCandidates.filter(
+                              (x) => x.uuid !== props.data.uuid
+                          )
+                        : selectedCandidates.concat({
+                              index: props.index,
+                              uuid: props.data.uuid,
+                          }),
+                });
             }}
             className={`select-none flex gap-5 bg-white items-center border-2 rounded-xl px-5 py-2 ${
                 checked ? "border-green-800" : "border-transparent"
             } ${cardDisable ? "opacity-50" : ""}`}
         >
-            <Checkbox
-                ref={ref}
-                disabled={cardDisable}
-                size="md"
-                checked={checked}
-                onChange={(e) =>
-                    onSelectedCandidatesChanged(e.target.checked, data)
-                }
-            />
+            <div
+                className={`border-2 rounded-lg ${
+                    checked ? "border-primary" : " border-gray-400"
+                }`}
+            >
+                <AiOutlineCheck
+                    className={` text-primary size-10 ${
+                        checked ? "" : "opacity-0"
+                    }`}
+                />
+            </div>
             <div className="size-25 rounded-full">
                 <Image
                     src={getBucketURL(props.data?.photo_url as string)}
