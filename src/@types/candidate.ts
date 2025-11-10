@@ -15,3 +15,16 @@ export interface CandidateType extends DBModel {
     name: string;
     description?: string;
 }
+
+export interface SortedCandidate {
+    type: string;
+    panelId: number;
+    id: number;
+    uuid: string;
+    name: string;
+    code: string;
+    photo_url: string;
+    digital_votes?: number;
+    manual_votes?: number;
+    total_votes?: number;
+}

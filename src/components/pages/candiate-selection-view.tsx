@@ -1,6 +1,6 @@
 "use client";
 
-import { TForeignId } from "@/@types";
+import { SortedCandidate } from "@/@types/candidate";
 import { useVoteStore } from "@/app/(private)/election/vote/vote.store";
 import { getBucketURL } from "@/lib/helpers";
 import { useGetPanelWiseCandidates } from "@/services/api/candidate.api";
@@ -9,7 +9,10 @@ import { Button, Image, Skeleton } from "@mantine/core";
 import { modals } from "@mantine/modals";
 import dayjs from "dayjs";
 import { useRouter } from "next/navigation";
+import { useRef, useState } from "react";
 import { AiOutlineCheck } from "react-icons/ai";
+import { useReactToPrint } from "react-to-print";
+import CandidateSelectionPrint from "./candiate-selection-print";
 
 export type TCandidate = {
     id: number;
@@ -28,9 +31,15 @@ export type TSelection = {
 };
 
 export default function CandidateSelectionView() {
+    const [step, setStep] = useState<"selection" | "confirmation">("selection");
     const router = useRouter();
     const { ballotNumber, selectedCandidates, voter_id } = useVoteStore();
     const giveVoteMutation = useGiveBulkVoteMutation();
+    const printRef = useRef<HTMLDivElement>(null);
+    const reactToPrintFn = useReactToPrint({
+        contentRef: printRef,
+        documentTitle: "Ballot Paper",
+    });
 
     const handleSubmitVote = async () => {
         modals.open({
@@ -68,11 +77,9 @@ export default function CandidateSelectionView() {
                                         election_id: "1",
                                         voter_id,
                                     });
-
+                                    reactToPrintFn();
                                     modals.closeAll();
-                                    router.push(
-                                        `/election/vote/summary/${ballotNumber}`
-                                    );
+                                    setTimeout(() => router.replace("/"), 1000);
                                 } catch {
                                     console.log("E");
                                 }
@@ -89,7 +96,7 @@ export default function CandidateSelectionView() {
     // 🧠 Extract data safely
     const { panelA, panelB, isLoading } = useGetPanelWiseCandidates();
 
-    return (
+    const renderSelectionStep = (
         <div className="m-5 max-w-7xl mx-auto space-y-5">
             {/* Header */}
             <div className="flex items-center justify-between px-5 py-2 rounded-2xl bg-green-100">
@@ -158,12 +165,14 @@ export default function CandidateSelectionView() {
                                         root: "disabled:bg-green-800!  disabled:text-white! disabled:opacity-50",
                                     }}
                                     disabled={selectedCandidates.length !== 15}
-                                    onClick={handleSubmitVote}
+                                    onClick={() => {
+                                        setStep("confirmation");
+                                    }}
                                     radius={10}
                                     w={400}
                                     size="lg"
                                 >
-                                    Submit
+                                    Next
                                 </Button>
                             </div>
                         </div>
@@ -172,18 +181,53 @@ export default function CandidateSelectionView() {
             )}
         </div>
     );
+
+    const renderConfirmationStep = (
+        <div className=" max-w-5xl mx-auto">
+            <div ref={printRef}>
+                <CandidateSelectionPrint />
+            </div>
+            <div className="flex justify-center items-center my-10 gap-10">
+                <Button
+                    classNames={{
+                        root: "disabled:bg-green-800!  disabled:text-white! disabled:opacity-50",
+                    }}
+                    variant="outline"
+                    onClick={() => setStep("selection")}
+                    radius={10}
+                    w={400}
+                    size="lg"
+                >
+                    Back
+                </Button>
+                <Button
+                    classNames={{
+                        root: "disabled:bg-green-800!  disabled:text-white! disabled:opacity-50",
+                    }}
+                    disabled={selectedCandidates.length !== 15}
+                    onClick={handleSubmitVote}
+                    radius={10}
+                    w={400}
+                    size="lg"
+                >
+                    Print & Submit
+                </Button>
+            </div>
+        </div>
+    );
+
+    return (
+        <div className="flex mx-auto">
+            {step === "selection"
+                ? renderSelectionStep
+                : renderConfirmationStep}
+        </div>
+    );
 }
 
 const PanelSection = (props: {
     name: string;
-    candidateList: {
-        panelId: string;
-        name: string;
-        type: string;
-        id: TForeignId;
-        photo_url: string;
-        uuid: string;
-    }[];
+    candidateList: SortedCandidate[];
     color: "red" | "green";
 }) => {
     return (
@@ -209,54 +253,42 @@ const PanelSection = (props: {
 
 const CandidateCard = (props: {
     panel: string;
-    data: {
-        panelId: string;
-        name: string;
-        type: string;
-        id: TForeignId;
-        photo_url: string;
-        uuid: string;
-    };
+    data: SortedCandidate;
     index: number;
 }) => {
-    const { selectedCandidates } = useVoteStore();
+    const selectedCandidates = useVoteStore((s) => s.selectedCandidates);
+    const selectCandidate = useVoteStore((s) => s.selectCandidate);
+    const unSelectCandidate = useVoteStore((s) => s.unSelectCandidate);
 
-    const data = {
-        name: props.data.name,
-        type: props.data.type,
-        index: props.index,
-        panel: props.panel,
-        id: Number(props.data.id),
-    };
+    const checked = selectedCandidates.some((x) => x.uuid === props.data.uuid);
 
-    const checked = !!selectedCandidates?.find(
-        (x) => x.uuid === props.data.uuid
-    );
-    const disabled =
-        selectedCandidates?.length === 0
-            ? false
-            : !!selectedCandidates.find((x) => x.index === data.index);
-    const cardDisable = !checked && disabled;
+    // 👇 compute disable directly
+    const disabled = (() => {
+        if (checked) return false;
+        const sameType = selectedCandidates.filter(
+            (x) => x.type === props.data.type
+        );
+        switch (props.data.type) {
+            case "Vice President":
+                return sameType.length >= 2;
+            case "Executive Secretary":
+                return sameType.length >= 5;
+            default:
+                return sameType.length >= 1;
+        }
+    })();
 
     return (
         <div
-            onClick={(e) => {
-                e.preventDefault();
-                if (cardDisable) return;
-                useVoteStore.setState({
-                    selectedCandidates: checked
-                        ? selectedCandidates.filter(
-                              (x) => x.uuid !== props.data.uuid
-                          )
-                        : selectedCandidates.concat({
-                              index: props.index,
-                              uuid: props.data.uuid,
-                          }),
-                });
+            onClick={() => {
+                if (disabled && !checked) return; // prevent click when disabled
+                checked
+                    ? unSelectCandidate(props.data)
+                    : selectCandidate(props.data);
             }}
             className={`select-none flex gap-5 bg-white items-center border-2 rounded-xl px-5 py-2 ${
                 checked ? "border-green-800" : "border-transparent"
-            } ${cardDisable ? "opacity-50" : ""}`}
+            } ${disabled ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}`}
         >
             <div
                 className={`border-2 rounded-lg ${
@@ -278,7 +310,7 @@ const CandidateCard = (props: {
             </div>
             <div>
                 <h1 className="text-2xl">{props.data?.name}</h1>
-                <p className=" font-semibold">{props.data?.type}</p>
+                <p className="font-semibold">{props.data?.type}</p>
             </div>
         </div>
     );
