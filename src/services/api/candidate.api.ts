@@ -1,5 +1,5 @@
 import { ListParams, ListResponse } from "@/@types";
-import { Candidate } from "@/@types/candidate";
+import { Candidate, SortedCandidate } from "@/@types/candidate";
 import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
 
@@ -22,6 +22,7 @@ export const useGetCandidateList = (params: ListParams<Candidate>) =>
             return data.data;
         },
     });
+
 export const useGetPanelCandidatesSortedList = (
     params: ListParams<Candidate>
 ) =>
@@ -183,8 +184,8 @@ export const useGetPanelWiseCandidates = () => {
 
     return {
         isLoading,
-        panelA: panelASorted,
-        panelB: panelBSorted,
+        panelA: panelASorted as SortedCandidate[],
+        panelB: panelBSorted as SortedCandidate[],
     };
 };
 
@@ -224,7 +225,7 @@ export const useGetPanelWiseVoteCountList = () => {
 
     return {
         isLoading,
-        panelA: panelASorted,
-        panelB: panelBSorted,
+        panelA: panelASorted as SortedCandidate[],
+        panelB: panelBSorted as SortedCandidate[],
     };
 };

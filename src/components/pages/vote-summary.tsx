@@ -1,6 +1,6 @@
 "use client";
 
-import { TForeignId } from "@/@types";
+import { SortedCandidate } from "@/@types/candidate";
 import { useVoteStore } from "@/app/(private)/election/vote/vote.store";
 import { useGetPanelWiseCandidates } from "@/services/api/candidate.api";
 import { useGetBallotInfoMutation } from "@/services/api/vote.api";
@@ -22,8 +22,16 @@ export default function VoteSummary() {
             .then((info) => {
                 useVoteStore.setState({
                     selectedCandidates: info.data.data.map((x, idx) => ({
-                        index: idx,
                         uuid: x.candidate_id,
+                        code: "",
+                        id: 0,
+                        name: "",
+                        panelId: 0,
+                        photo_url: "",
+                        type: "",
+                        digital_votes: 0,
+                        manual_votes: 0,
+                        total_votes: 0,
                     })),
                 });
                 console.log(info, "INFO");
@@ -67,16 +75,8 @@ export default function VoteSummary() {
 
             {/* PANELS */}
             <main className="grid grid-cols-2 gap-6 flex-1 items-stretch">
-                <PanelPrint
-                    title="Panel A"
-                    color="green"
-                    list={(panelA as any) ?? []}
-                />
-                <PanelPrint
-                    title="Panel B"
-                    color="red"
-                    list={(panelB as any) ?? []}
-                />
+                <PanelPrint title="Panel A" color="green" list={panelA ?? []} />
+                <PanelPrint title="Panel B" color="red" list={panelB ?? []} />
             </main>
 
             {/* FOOTER */}
@@ -94,14 +94,7 @@ const PanelPrint = ({
 }: {
     title: string;
     color: "red" | "green";
-    list: {
-        panelId: string;
-        name: string;
-        type: string;
-        id: TForeignId;
-        photo_url: string;
-        uuid: string;
-    }[];
+    list: SortedCandidate[];
 }) => {
     const selectedCandidates = useVoteStore(
         (state) => state.selectedCandidates

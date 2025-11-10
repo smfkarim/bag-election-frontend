@@ -1,5 +1,5 @@
 "use client";
-import CandidateSelectionPrint from "@/components/pages/candiate-selection-print";
+import ManualVoteBallot from "@/components/pages/manual-vote-ballot";
 import useAuth from "@/hooks/useAuth";
 import { useFullDeviceInfo } from "@/hooks/useFullDeviceInfo";
 import { getBucketURL } from "@/lib/helpers";
@@ -96,14 +96,14 @@ export default function VoterDetails() {
                             onClick={async () => {
                                 try {
                                     setBallotPrinted(true);
-                                    await sixDigitKeyPrintBallotMutation.mutateAsync(
-                                        {
-                                            type: "ballot",
-                                            device_info: "123456",
-                                            user_id: userId ?? "",
-                                            uuid: voter?.uuid ?? "",
-                                        }
-                                    );
+                                    // await sixDigitKeyPrintBallotMutation.mutateAsync(
+                                    //     {
+                                    //         type: "ballot",
+                                    //         device_info: "123456",
+                                    //         user_id: userId ?? "",
+                                    //         uuid: voter?.uuid ?? "",
+                                    //     }
+                                    // );
                                     reactToPrintFn();
                                 } finally {
                                     // notifications.show({
@@ -132,7 +132,7 @@ export default function VoterDetails() {
             {/* ✅ Keep this div mounted and offscreen (NOT hidden or display:none) */}
             <div style={{ display: "none" }}>
                 <div ref={printRef}>
-                    <CandidateSelectionPrint />
+                    <ManualVoteBallot />
                 </div>
             </div>
             <div className="max-w-7xl mx-auto my-10 space-y-5">

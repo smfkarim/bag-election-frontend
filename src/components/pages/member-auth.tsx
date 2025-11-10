@@ -17,17 +17,6 @@ export default function MemberAuth() {
     const [retryCount, setRetryCount] = useState(0);
 
     const handleContinue = async () => {
-        // if (pin !== requiredPin) {
-        //     notifications.show({
-        //         color: "red",
-        //         title: "Wrong PIN",
-        //         message: "You have enter wrong pin",
-        //     });
-        //     setRetryCount((v) => v + 1);
-        //     return;
-        // }
-        // // notifications.show({})
-
         try {
             const res = await validateSixDigitCode({
                 code: pin,
