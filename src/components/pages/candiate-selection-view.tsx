@@ -41,6 +41,11 @@ export default function CandidateSelectionView() {
         documentTitle: "Ballot Paper",
     });
 
+    let first = "President";
+    let second = "Vice President";
+    let third = "others";
+    let fourth = "Executive Secretary";
+
     const handleSubmitVote = async () => {
         modals.open({
             closeOnClickOutside: false,
@@ -139,6 +144,7 @@ export default function CandidateSelectionView() {
                         </p>
                     ) : (
                         <div>
+                            {/* Presidents */}
                             <div
                                 className={`flex gap-10 ${
                                     process.env.NEXT_PUBLIC_PANEL_SWAP ===
@@ -148,15 +154,94 @@ export default function CandidateSelectionView() {
                                 }`}
                             >
                                 <PanelSection
+                                    type={first}
                                     candidateList={(panelA as any) ?? []}
                                     name="A"
                                     color="green"
                                 />
                                 <PanelSection
+                                    type={first}
                                     candidateList={(panelB as any) ?? []}
                                     name="B"
                                     color="red"
                                 />
+                            </div>
+
+                            {/* Vice Presidents */}
+                            <div>
+                                <h1 className="text-2xl font-bold text-center mt-5">
+                                    Vote two from following four
+                                </h1>
+                                <div
+                                    className={`flex gap-10 ${
+                                        process.env.NEXT_PUBLIC_PANEL_SWAP ===
+                                        "true"
+                                            ? "flex-row-reverse"
+                                            : ""
+                                    }`}
+                                >
+                                    <VicePresidentPanelSection
+                                        type={second}
+                                        candidateList={(panelA as any) ?? []}
+                                        name="A"
+                                        color="green"
+                                    />
+                                    <VicePresidentPanelSection
+                                        type={second}
+                                        candidateList={(panelB as any) ?? []}
+                                        name="B"
+                                        color="red"
+                                    />
+                                </div>
+                            </div>
+                            {/* others all */}
+                            <div>
+                                <div
+                                    className={`flex gap-10 ${
+                                        process.env.NEXT_PUBLIC_PANEL_SWAP ===
+                                        "true"
+                                            ? "flex-row-reverse"
+                                            : ""
+                                    }`}
+                                >
+                                    <AllPanelSection
+                                        candidateList={(panelA as any) ?? []}
+                                        name="A"
+                                        color="green"
+                                    />
+                                    <AllPanelSection
+                                        candidateList={(panelB as any) ?? []}
+                                        name="B"
+                                        color="red"
+                                    />
+                                </div>
+                            </div>
+                            {/*  Executive Secretary */}
+                            <div>
+                                <h1 className="text-2xl font-bold text-center mt-5">
+                                    Vote five from the following ten
+                                </h1>
+                                <div
+                                    className={`flex gap-10 ${
+                                        process.env.NEXT_PUBLIC_PANEL_SWAP ===
+                                        "true"
+                                            ? "flex-row-reverse"
+                                            : ""
+                                    }`}
+                                >
+                                    <ExecutiveSecretaryPanelSection
+                                        type={fourth}
+                                        candidateList={(panelA as any) ?? []}
+                                        name="A"
+                                        color="green"
+                                    />
+                                    <ExecutiveSecretaryPanelSection
+                                        type={fourth}
+                                        candidateList={(panelB as any) ?? []}
+                                        name="B"
+                                        color="red"
+                                    />
+                                </div>
                             </div>
 
                             <div className="flex justify-center items-center my-10">
@@ -225,11 +310,52 @@ export default function CandidateSelectionView() {
     );
 }
 
-const PanelSection = (props: {
+//   All
+const AllPanelSection = (props: {
     name: string;
     candidateList: SortedCandidate[];
     color: "red" | "green";
 }) => {
+    console.log(props?.candidateList);
+
+    const all = props.candidateList.filter(
+        (candidate) =>
+            candidate.type !== "President" &&
+            candidate.type !== "Vice President" &&
+            candidate.type !== "Executive Secretary"
+    );
+    return (
+        <div className="flex-1 space-y-2 mt-5">
+            <div
+                className={`p-5 rounded-2xl space-y-3 ${
+                    props.color === "red" ? "bg-red-800/10" : "bg-green-800/10"
+                }`}
+            >
+                {all?.map((x, i) => (
+                    <CandidateCard
+                        key={x.id}
+                        panel={props.name}
+                        data={x}
+                        index={i + 1}
+                    />
+                ))}
+            </div>
+        </div>
+    );
+};
+
+//   presidents
+const PanelSection = (props: {
+    type: string;
+    name: string;
+    candidateList: SortedCandidate[];
+    color: "red" | "green";
+}) => {
+    console.log(props?.candidateList);
+
+    const presidents = props.candidateList.filter(
+        (candidate) => candidate.type === props.type
+    );
     return (
         <div className="flex-1 space-y-2 mt-5">
             <h1 className="text-center text-2xl">Panel {props.name}</h1>
@@ -238,7 +364,69 @@ const PanelSection = (props: {
                     props.color === "red" ? "bg-red-800/10" : "bg-green-800/10"
                 }`}
             >
-                {props.candidateList?.map((x, i) => (
+                {presidents?.map((x, i) => (
+                    <CandidateCard
+                        key={x.id}
+                        panel={props.name}
+                        data={x}
+                        index={i + 1}
+                    />
+                ))}
+            </div>
+        </div>
+    );
+};
+
+// Vice President
+const VicePresidentPanelSection = (props: {
+    type: string;
+    name: string;
+    candidateList: SortedCandidate[];
+    color: "red" | "green";
+}) => {
+    console.log(props?.candidateList);
+    const vicePresidents = props.candidateList.filter(
+        (candidate) => candidate.type === props.type
+    );
+    return (
+        <div className="flex-1 space-y-2 mt-5">
+            <div
+                className={`p-5 rounded-2xl space-y-3 ${
+                    props.color === "red" ? "bg-red-800/10" : "bg-green-800/10"
+                }`}
+            >
+                {vicePresidents?.map((x, i) => (
+                    <CandidateCard
+                        key={x.id}
+                        panel={props.name}
+                        data={x}
+                        index={i + 1}
+                    />
+                ))}
+            </div>
+        </div>
+    );
+};
+
+// "Executive Secretary"
+const ExecutiveSecretaryPanelSection = (props: {
+    type: string;
+    name: string;
+    candidateList: SortedCandidate[];
+    color: "red" | "green";
+}) => {
+    console.log(props?.candidateList);
+    const ExecutiveSecretary = props.candidateList.filter(
+        (candidate) => candidate.type === props.type
+    );
+    return (
+        <div className="flex-1 space-y-2 mt-5">
+            <div
+                className={`p-5 rounded-2xl space-y-3 ${
+                    props.color === "red" ? "bg-red-800/10" : "bg-green-800/10"
+                }`}
+            >
+                {ExecutiveSecretary?.map((x, i) => (
                     <CandidateCard
                         key={x.id}
                         panel={props.name}
