@@ -9,7 +9,6 @@ import { AiOutlineLock } from "react-icons/ai";
 
 export default function MemberAuth() {
     const router = useRouter();
-    // const requiredPin = "123456";
     const { mutateAsync: validateSixDigitCode } =
         useValidateSixDigitKeyMutation();
     const [blocked, setBlocked] = useState(false);
