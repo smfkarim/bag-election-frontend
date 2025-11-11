@@ -41,11 +41,10 @@ export default function CandidateSelectionView() {
     documentTitle: "Ballot Paper",
   });
 
-
-  let first = "President"
-  let second = "Vice President"
-  let third = "others"
-  let fourth = "Executive Secretary"
+  let first = "President";
+  let second = "Vice President";
+  let third = "others";
+  let fourth = "Executive Secretary";
 
   const handleSubmitVote = async () => {
     modals.open({
@@ -147,15 +146,15 @@ export default function CandidateSelectionView() {
                     ? "flex-row-reverse"
                     : ""
                 }`}
-              > 
+              >
                 <PanelSection
-                type={first}
+                  type={first}
                   candidateList={(panelA as any) ?? []}
                   name="A"
                   color="green"
                 />
                 <PanelSection
-                type={first}
+                  type={first}
                   candidateList={(panelB as any) ?? []}
                   name="B"
                   color="red"
@@ -175,13 +174,13 @@ export default function CandidateSelectionView() {
                   }`}
                 >
                   <VicePresidentPanelSection
-                  type={second}
+                    type={second}
                     candidateList={(panelA as any) ?? []}
                     name="A"
                     color="green"
                   />
                   <VicePresidentPanelSection
-                  type={second}
+                    type={second}
                     candidateList={(panelB as any) ?? []}
                     name="B"
                     color="red"
@@ -222,13 +221,13 @@ export default function CandidateSelectionView() {
                   }`}
                 >
                   <ExecutiveSecretaryPanelSection
-                   type={fourth}
+                    type={fourth}
                     candidateList={(panelA as any) ?? []}
                     name="A"
                     color="green"
                   />
                   <ExecutiveSecretaryPanelSection
-                   type={fourth}
+                    type={fourth}
                     candidateList={(panelB as any) ?? []}
                     name="B"
                     color="red"
@@ -331,7 +330,7 @@ const AllPanelSection = (props: {
 
 //   presidents
 const PanelSection = (props: {
-    type:string
+  type: string;
   name: string;
   candidateList: SortedCandidate[];
   color: "red" | "green";
@@ -339,7 +338,7 @@ const PanelSection = (props: {
   console.log(props?.candidateList);
 
   const presidents = props.candidateList.filter(
-    (candidate) => (candidate.type === props.type) 
+    (candidate) => candidate.type === props.type
   );
   return (
     <div className="flex-1 space-y-2 mt-5">
@@ -359,14 +358,14 @@ const PanelSection = (props: {
 
 // Vice President
 const VicePresidentPanelSection = (props: {
-    type:string
+  type: string;
   name: string;
   candidateList: SortedCandidate[];
   color: "red" | "green";
 }) => {
   console.log(props?.candidateList);
   const vicePresidents = props.candidateList.filter(
-    (candidate) => (candidate.type === props.type)
+    (candidate) => candidate.type === props.type
   );
   return (
     <div className="flex-1 space-y-2 mt-5">
@@ -385,14 +384,14 @@ const VicePresidentPanelSection = (props: {
 
 // "Executive Secretary"
 const ExecutiveSecretaryPanelSection = (props: {
-    type:string
+  type: string;
   name: string;
   candidateList: SortedCandidate[];
   color: "red" | "green";
 }) => {
   console.log(props?.candidateList);
   const ExecutiveSecretary = props.candidateList.filter(
-    (candidate) => (candidate.type === props.type)
+    (candidate) => candidate.type === props.type
   );
   return (
     <div className="flex-1 space-y-2 mt-5">
