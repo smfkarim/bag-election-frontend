@@ -60,7 +60,7 @@ export default function VoteSummary() {
 
                 <div className="flex-1 text-center">
                     <h1 className="text-2xl font-bold text-green-800 uppercase">
-                        Official Ballot Paper
+                        Official Ballot Paper 
                     </h1>
                     <p className="text-sm text-gray-700">
                         Ballot Number: {ballotNumber || "—"}
@@ -106,7 +106,7 @@ const PanelPrint = ({
                     color === "green" ? "text-green-700" : "text-red-700"
                 }`}
             >
-                {title}
+                {title} 
             </h2>
 
             <table className="w-full  text-sm flex-1 justify-start">
