@@ -15,303 +15,641 @@ import { useReactToPrint } from "react-to-print";
 import CandidateSelectionPrint from "./candiate-selection-print";
 
 export type TCandidate = {
-    id: number;
-    name: string;
-    type: string;
-    img_url: string;
+  id: number;
+  name: string;
+  type: string;
+  img_url: string;
 };
 
 export type TSelection = {
-    id: number;
-    index: number;
-    name: string;
-    type: string;
-    panel: string;
-    uuid: string;
+  id: number;
+  index: number;
+  name: string;
+  type: string;
+  panel: string;
+  uuid: string;
 };
 
 export default function CandidateSelectionView() {
-    const [step, setStep] = useState<"selection" | "confirmation">("selection");
-    const router = useRouter();
-    const { ballotNumber, selectedCandidates, voter_id } = useVoteStore();
-    const giveVoteMutation = useGiveBulkVoteMutation();
-    const printRef = useRef<HTMLDivElement>(null);
-    const reactToPrintFn = useReactToPrint({
-        contentRef: printRef,
-        documentTitle: "Ballot Paper",
+  const [step, setStep] = useState<"selection" | "confirmation">("selection");
+  const router = useRouter();
+  const { ballotNumber, selectedCandidates, voter_id } = useVoteStore();
+  const giveVoteMutation = useGiveBulkVoteMutation();
+  const printRef = useRef<HTMLDivElement>(null);
+  const reactToPrintFn = useReactToPrint({
+    contentRef: printRef,
+    documentTitle: "Ballot Paper",
+  });
+
+  const handleSubmitVote = async () => {
+    modals.open({
+      closeOnClickOutside: false,
+      withCloseButton: false,
+      centered: true,
+      size: "300px",
+      children: (
+        <div className="flex flex-col items-center space-y-3">
+          <p className="text-center p-5">
+            Are you sure to confirm the vote and print the Ballot Paper?
+          </p>
+          <div className="flex items-center gap-5">
+            <Button
+              variant="outline"
+              color="red"
+              onClick={() => modals.closeAll()}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={async (e) => {
+                e.preventDefault();
+                try {
+                  const ids = selectedCandidates?.map((x) => x.uuid);
+                  await giveVoteMutation.mutateAsync({
+                    candidate_ids: ids,
+                    device_id: "windows",
+                    election_id: "1",
+                    voter_id,
+                  });
+                  reactToPrintFn();
+                  modals.closeAll();
+                  setTimeout(() => router.replace("/"), 1000);
+                } catch {
+                  console.log("E");
+                }
+              }}
+            >
+              Confirm
+            </Button>
+          </div>
+        </div>
+      ),
     });
+  };
 
-    const handleSubmitVote = async () => {
-        modals.open({
-            closeOnClickOutside: false,
-            withCloseButton: false,
-            centered: true,
-            size: "300px",
-            children: (
-                <div className="flex flex-col items-center space-y-3">
-                    <p className="text-center p-5">
-                        Are you sure to confirm the vote and print the Ballot
-                        Paper?
-                    </p>
+  const { panelA, panelB, isLoading } = useGetPanelWiseCandidates();
 
-                    <div className="flex items-center gap-5">
-                        <Button
-                            variant="outline"
-                            color="red"
-                            onClick={() => {
-                                modals.closeAll();
-                            }}
-                        >
-                            Cancel
-                        </Button>
-                        <Button
-                            onClick={async (e) => {
-                                e.preventDefault();
-                                try {
-                                    const ids = selectedCandidates?.map(
-                                        (x) => x.uuid
-                                    );
-                                    await giveVoteMutation.mutateAsync({
-                                        candidate_ids: ids,
-                                        device_id: "windows",
-                                        election_id: "1",
-                                        voter_id,
-                                    });
-                                    reactToPrintFn();
-                                    modals.closeAll();
-                                    setTimeout(() => router.replace("/"), 1000);
-                                } catch {
-                                    console.log("E");
-                                }
-                            }}
-                        >
-                            Confirm
-                        </Button>
-                    </div>
-                </div>
-            ),
-        });
-    };
+  // 🔹 Group candidates by category (type)
+  const getCategoryWisePanels = () => {
+    const categories = new Set([
+      ...(panelA?.map((c) => c.type) || []),
+      ...(panelB?.map((c) => c.type) || []),
+    ]);
 
-    // 🧠 Extract data safely
-    const { panelA, panelB, isLoading } = useGetPanelWiseCandidates();
+    return Array.from(categories).map((cat) => ({
+      category: cat,
+      panelA: panelA?.filter((x) => x.type === cat) || [],
+      panelB: panelB?.filter((x) => x.type === cat) || [],
+    }));
+  };
 
-    const renderSelectionStep = (
-        <div className="m-5 max-w-7xl mx-auto space-y-5">
-            {/* Header */}
-            <div className="flex items-center justify-between px-5 py-2 rounded-2xl bg-green-100">
-                <div className="size-15">
-                    <Image src={"/bag_logo.png"} alt="bag_logo" />
-                </div>
+  const categoryWisePanels = getCategoryWisePanels();
 
-                <h1 className="text-right text-2xl text-green-800 font-semibold">
-                    Ballot Number: {ballotNumber}
-                </h1>
-                <div className="sm:text-lg">
-                    <p className="text-right">{dayjs().format("hh:mm A")}</p>
-                    <p>{dayjs().format("DD MMMM, YYYY")}</p>
-                </div>
+  const renderSelectionStep = (
+    <div className="m-5 max-w-7xl mx-auto space-y-1">
+      {/* Header */}
+      <div className="flex items-center justify-between px-5 py-2 rounded-2xl bg-green-100">
+        <div className="size-15">
+          <Image src={"/bag_logo.png"} alt="bag_logo" />
+        </div>
+
+        <h1 className="text-right text-2xl text-green-800 font-semibold">
+          Ballot Number: {ballotNumber}
+        </h1>
+        <div className="sm:text-lg">
+          <p className="text-right">{dayjs().format("hh:mm A")}</p>
+          <p>{dayjs().format("DD MMMM, YYYY")}</p>
+        </div>
+      </div>
+
+      {/* ⏳ Loading Skeleton */}
+      {isLoading ? (
+        <div className="flex gap-10 mt-10">
+          {[1, 2].map((panel) => (
+            <div key={panel} className="flex-1 space-y-5">
+              <Skeleton height={30} width="40%" mx="auto" />
+              {[...Array(10)].map((_, i) => (
+                <Skeleton
+                  key={i}
+                  height={60}
+                  radius="xl"
+                  className="mt-3"
+                  animate
+                />
+              ))}
             </div>
+          ))}
+        </div>
+      ) : (
+        <div>
+          {panelA?.length === 0 || panelB?.length === 0 ? (
+            <p className="text-center my-10">No candidates available</p>
+          ) : (
+            <div className="space-y-3">
 
-            {/* ⏳ Loading Skeleton */}
-            {isLoading ? (
-                <div className="flex gap-10 mt-10">
-                    {[1, 2].map((panel) => (
-                        <div key={panel} className="flex-1 space-y-5">
-                            <Skeleton height={30} width="40%" mx="auto" />
-                            {[...Array(10)].map((_, i) => (
-                                <Skeleton
-                                    key={i}
-                                    height={60}
-                                    radius="xl"
-                                    className="mt-3"
-                                    animate
-                                />
-                            ))}
-                        </div>
-                    ))}
-                </div>
-            ) : (
-                <div>
-                    {panelA?.length === 0 || panelB?.length === 0 ? (
-                        <p className="text-center my-10">
-                            No candidates available
-                        </p>
-                    ) : (
-                        <div>
-                            <div
-                                className={`flex gap-10 ${
-                                    process.env.NEXT_PUBLIC_PANEL_SWAP ===
-                                    "true"
-                                        ? "flex-row-reverse"
-                                        : ""
-                                }`}
-                            >
-                                <PanelSection
-                                    candidateList={(panelA as any) ?? []}
-                                    name="A"
-                                    color="green"
-                                />
-                                <PanelSection
-                                    candidateList={(panelB as any) ?? []}
-                                    name="B"
-                                    color="red"
-                                />
-                            </div>
+              {/* 🔹 Panel headers - shown only once at top */}
+              <div
+                className={`flex justify-between text-center text-xl font-semibold text-green-900 mb-3 ${
+                  process.env.NEXT_PUBLIC_PANEL_SWAP === "true"
+                    ? "flex-row-reverse"
+                    : ""
+                }`}
+              >
+                <h1 className="flex-1">Panel A</h1>
+                <h1 className="flex-1">Panel B</h1>
+              </div>
 
-                            <div className="flex justify-center items-center my-10">
-                                <Button
-                                    classNames={{
-                                        root: "disabled:bg-green-800!  disabled:text-white! disabled:opacity-50",
-                                    }}
-                                    disabled={selectedCandidates.length !== 15}
-                                    onClick={() => {
-                                        setStep("confirmation");
-                                    }}
-                                    radius={10}
-                                    w={400}
-                                    size="lg"
-                                >
-                                    Next
-                                </Button>
-                            </div>
-                        </div>
+              {/* 🔹 Render each category */}
+              {categoryWisePanels.map((cat) => {
+                const total = cat.panelA.length + cat.panelB.length;
+                const allowed = Math.ceil(total / 2);
+                return (
+                  <div key={cat.category}>                
+
+                    {/*  Only show for VP & Executive Secretary */}
+                    {["Vice President", "Executive Secretary"].includes(cat.category) && (
+                      <p className="text-center text-green-700 font-medium ">
+                        You can select {allowed} candidate{allowed > 1 && "s"}.
+                      </p>
                     )}
-                </div>
-            )}
-        </div>
-    );
 
-    const renderConfirmationStep = (
-        <div className=" max-w-5xl mx-auto">
-            <div ref={printRef}>
-                <CandidateSelectionPrint />
-            </div>
-            <div className="flex justify-center items-center my-10 gap-10">
-                <Button
-                    classNames={{
-                        root: "disabled:bg-green-800!  disabled:text-white! disabled:opacity-50",
-                    }}
-                    variant="outline"
-                    onClick={() => setStep("selection")}
-                    radius={10}
-                    w={400}
-                    size="lg"
-                >
-                    Back
-                </Button>
-                <Button
-                    classNames={{
-                        root: "disabled:bg-green-800!  disabled:text-white! disabled:opacity-50",
-                    }}
-                    disabled={selectedCandidates.length !== 15}
-                    onClick={handleSubmitVote}
-                    radius={10}
-                    w={400}
-                    size="lg"
-                >
-                    Print & Submit
-                </Button>
-            </div>
-        </div>
-    );
+                    <div
+                      className={`flex gap-10 ${
+                        process.env.NEXT_PUBLIC_PANEL_SWAP === "true"
+                          ? "flex-row-reverse"
+                          : ""
+                      }`}
+                    >
+                      <PanelSection
+                        candidateList={cat.panelA}
+                        name="A"
+                        color="green"
+                      />
+                      <PanelSection
+                        candidateList={cat.panelB}
+                        name="B"
+                        color="red"
+                      />
+                    </div>
+                  </div>
+                );
+              })}
 
-    return (
-        <div className="flex mx-auto">
-            {step === "selection"
-                ? renderSelectionStep
-                : renderConfirmationStep}
+              <div className="flex justify-center items-center my-10">
+                <Button
+                  classNames={{
+                    root: "disabled:bg-green-800! disabled:text-white! disabled:opacity-50",
+                  }}
+                  disabled={selectedCandidates.length === 0}
+                  onClick={() => setStep("confirmation")}
+                  radius={10}
+                  w={400}
+                  size="lg"
+                >
+                  Next
+                </Button>
+              </div>
+            </div>
+          )}
         </div>
-    );
+      )}
+    </div>
+  );
+
+  const renderConfirmationStep = (
+    <div className="max-w-5xl mx-auto">
+      <div ref={printRef}>
+        <CandidateSelectionPrint />
+      </div>
+      <div className="flex justify-center items-center my-10 gap-10">
+        <Button
+          variant="outline"
+          onClick={() => setStep("selection")}
+          radius={10}
+          w={400}
+          size="lg"
+        >
+          Back
+        </Button>
+        <Button
+          disabled={selectedCandidates.length === 0}
+          onClick={handleSubmitVote}
+          radius={10}
+          w={400}
+          size="lg"
+        >
+          Print & Submit
+        </Button>
+      </div>
+    </div>
+  );
+
+  return (
+    <div className="flex mx-auto">
+      {step === "selection" ? renderSelectionStep : renderConfirmationStep}
+    </div>
+  );
 }
 
 const PanelSection = (props: {
-    name: string;
-    candidateList: SortedCandidate[];
-    color: "red" | "green";
+  name: string;
+  candidateList: SortedCandidate[];
+  color: "red" | "green";
 }) => {
-    return (
-        <div className="flex-1 space-y-2 mt-5">
-            <h1 className="text-center text-2xl">Panel {props.name}</h1>
-            <div
-                className={`p-5 rounded-2xl space-y-3 ${
-                    props.color === "red" ? "bg-red-800/10" : "bg-green-800/10"
-                }`}
-            >
-                {props.candidateList?.map((x, i) => (
-                    <CandidateCard
-                        key={x.id}
-                        panel={props.name}
-                        data={x}
-                        index={i + 1}
-                    />
-                ))}
-            </div>
-        </div>
-    );
+  return (
+    <div className="flex-1 space-y-2 mt-5">
+      {/* Removed per-section panel title */}
+      <div
+        className={`p-5 rounded-2xl space-y-3 ${
+          props.color === "red" ? "bg-red-800/10" : "bg-green-800/10"
+        }`}
+      >
+        {props.candidateList?.map((x, i) => (
+          <CandidateCard key={x.id} panel={props.name} data={x} index={i + 1} />
+        ))}
+      </div>
+    </div>
+  );
 };
 
 const CandidateCard = (props: {
-    panel: string;
-    data: SortedCandidate;
-    index: number;
+  panel: string;
+  data: SortedCandidate;
+  index: number;
 }) => {
-    const selectedCandidates = useVoteStore((s) => s.selectedCandidates);
-    const selectCandidate = useVoteStore((s) => s.selectCandidate);
-    const unSelectCandidate = useVoteStore((s) => s.unSelectCandidate);
+  const selectedCandidates = useVoteStore((s) => s.selectedCandidates);
+  const selectCandidate = useVoteStore((s) => s.selectCandidate);
+  const unSelectCandidate = useVoteStore((s) => s.unSelectCandidate);
 
-    const checked = selectedCandidates.some((x) => x.uuid === props.data.uuid);
+  const checked = selectedCandidates.some((x) => x.uuid === props.data.uuid);
 
-    // 👇 compute disable directly
-    const disabled = (() => {
-        if (checked) return false;
-        const sameType = selectedCandidates.filter(
-            (x) => x.type === props.data.type
-        );
-        switch (props.data.type) {
-            case "Vice President":
-                return sameType.length >= 2;
-            case "Executive Secretary":
-                return sameType.length >= 5;
-            default:
-                return sameType.length >= 1;
-        }
-    })();
-
-    return (
-        <div
-            onClick={() => {
-                if (disabled && !checked) return; // prevent click when disabled
-                checked
-                    ? unSelectCandidate(props.data)
-                    : selectCandidate(props.data);
-            }}
-            className={`select-none flex gap-5 bg-white items-center border-2 rounded-xl px-5 py-2 ${
-                checked ? "border-green-800" : "border-transparent"
-            } ${disabled ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}`}
-        >
-            <div
-                className={`border-2 rounded-lg ${
-                    checked ? "border-primary" : " border-gray-400"
-                }`}
-            >
-                <AiOutlineCheck
-                    className={` text-primary size-10 ${
-                        checked ? "" : "opacity-0"
-                    }`}
-                />
-            </div>
-            <div className="size-25 rounded-full">
-                <Image
-                    src={getBucketURL(props.data?.photo_url as string)}
-                    alt={props.data.name}
-                    className="h-full w-full object-top"
-                />
-            </div>
-            <div>
-                <h1 className="text-2xl">{props.data?.name}</h1>
-                <p className="font-semibold">{props.data?.type}</p>
-            </div>
-        </div>
+  const disabled = (() => {
+    if (checked) return false;
+    const sameType = selectedCandidates.filter(
+      (x) => x.type === props.data.type
     );
+    switch (props.data.type) {
+      case "Vice President":
+        return sameType.length >= 2;
+      case "Executive Secretary":
+        return sameType.length >= 5;
+      default:
+        return sameType.length >= 1;
+    }
+  })();
+
+  return (
+    <div
+      onClick={() => {
+        if (disabled && !checked) return;
+        checked
+          ? unSelectCandidate(props.data)
+          : selectCandidate(props.data);
+      }}
+      className={`select-none flex gap-5 bg-white items-center border-2 rounded-xl px-5 py-2 transition-all duration-200 ${
+        checked
+          ? "border-green-800 shadow-md"
+          : "border-transparent hover:border-gray-300"
+      } ${disabled ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}`}
+    >
+      <div
+        className={`border-2 rounded-lg ${
+          checked ? "border-green-800" : "border-gray-400"
+        }`}
+      >
+        <AiOutlineCheck
+          className={`text-green-800 size-10 ${checked ? "" : "opacity-0"}`}
+        />
+      </div>
+      <div className="size-24 rounded-full overflow-hidden">
+        <Image
+          src={getBucketURL(props.data?.photo_url as string)}
+          alt={props.data.name}
+          className="h-full w-full object-cover object-top"
+        />
+      </div>
+      <div>
+        <h1 className="text-xl font-semibold">{props.data?.name}</h1>
+        <p className="font-medium">{props.data?.type}</p>
+      </div>
+    </div>
+  );
 };
+
+// "use client";
+
+// import { SortedCandidate } from "@/@types/candidate";
+// import { useVoteStore } from "@/app/(private)/election/vote/vote.store";
+// import { getBucketURL } from "@/lib/helpers";
+// import { useGetPanelWiseCandidates } from "@/services/api/candidate.api";
+// import { useGiveBulkVoteMutation } from "@/services/api/voter.api";
+// import { Button, Image, Skeleton } from "@mantine/core";
+// import { modals } from "@mantine/modals";
+// import dayjs from "dayjs";
+// import { useRouter } from "next/navigation";
+// import { useRef, useState } from "react";
+// import { AiOutlineCheck } from "react-icons/ai";
+// import { useReactToPrint } from "react-to-print";
+// import CandidateSelectionPrint from "./candiate-selection-print";
+
+// export type TCandidate = {
+//     id: number;
+//     name: string;
+//     type: string;
+//     img_url: string;
+// };
+
+// export type TSelection = {
+//     id: number;
+//     index: number;
+//     name: string;
+//     type: string;
+//     panel: string;
+//     uuid: string;
+// };
+
+// export default function CandidateSelectionView() {
+//     const [step, setStep] = useState<"selection" | "confirmation">("selection");
+//     const router = useRouter();
+//     const { ballotNumber, selectedCandidates, voter_id } = useVoteStore();
+//     const giveVoteMutation = useGiveBulkVoteMutation();
+//     const printRef = useRef<HTMLDivElement>(null);
+//     const reactToPrintFn = useReactToPrint({
+//         contentRef: printRef,
+//         documentTitle: "Ballot Paper",
+//     });
+
+//     const handleSubmitVote = async () => {
+//         modals.open({
+//             closeOnClickOutside: false,
+//             withCloseButton: false,
+//             centered: true,
+//             size: "300px",
+//             children: (
+//                 <div className="flex flex-col items-center space-y-3">
+//                     <p className="text-center p-5">
+//                         Are you sure to confirm the vote and print the Ballot
+//                         Paper?
+//                     </p>
+
+//                     <div className="flex items-center gap-5">
+//                         <Button
+//                             variant="outline"
+//                             color="red"
+//                             onClick={() => {
+//                                 modals.closeAll();
+//                             }}
+//                         >
+//                             Cancel
+//                         </Button>
+//                         <Button
+//                             onClick={async (e) => {
+//                                 e.preventDefault();
+//                                 try {
+//                                     const ids = selectedCandidates?.map(
+//                                         (x) => x.uuid
+//                                     );
+//                                     await giveVoteMutation.mutateAsync({
+//                                         candidate_ids: ids,
+//                                         device_id: "windows",
+//                                         election_id: "1",
+//                                         voter_id,
+//                                     });
+//                                     reactToPrintFn();
+//                                     modals.closeAll();
+//                                     setTimeout(() => router.replace("/"), 1000);
+//                                 } catch {
+//                                     console.log("E");
+//                                 }
+//                             }}
+//                         >
+//                             Confirm
+//                         </Button>
+//                     </div>
+//                 </div>
+//             ),
+//         });
+//     };
+
+//     // 🧠 Extract data safely
+//     const { panelA, panelB, isLoading } = useGetPanelWiseCandidates();
+
+//     const renderSelectionStep = (
+//         <div className="m-5 max-w-7xl mx-auto space-y-5">
+//             {/* Header */}
+//             <div className="flex items-center justify-between px-5 py-2 rounded-2xl bg-green-100">
+//                 <div className="size-15">
+//                     <Image src={"/bag_logo.png"} alt="bag_logo" />
+//                 </div>
+
+//                 <h1 className="text-right text-2xl text-green-800 font-semibold">
+//                     Ballot Number: {ballotNumber}
+//                 </h1>
+//                 <div className="sm:text-lg">
+//                     <p className="text-right">{dayjs().format("hh:mm A")}</p>
+//                     <p>{dayjs().format("DD MMMM, YYYY")}</p>
+//                 </div>
+//             </div>
+
+//             {/* ⏳ Loading Skeleton */}
+//             {isLoading ? (
+//                 <div className="flex gap-10 mt-10">
+//                     {[1, 2].map((panel) => (
+//                         <div key={panel} className="flex-1 space-y-5">
+//                             <Skeleton height={30} width="40%" mx="auto" />
+//                             {[...Array(10)].map((_, i) => (
+//                                 <Skeleton
+//                                     key={i}
+//                                     height={60}
+//                                     radius="xl"
+//                                     className="mt-3"
+//                                     animate
+//                                 />
+//                             ))}
+//                         </div>
+//                     ))}
+//                 </div>
+//             ) : (
+//                 <div>
+//                     {panelA?.length === 0 || panelB?.length === 0 ? (
+//                         <p className="text-center my-10">
+//                             No candidates available
+//                         </p>
+//                     ) : (
+//                         <div>
+//                             <div
+//                                 className={`flex gap-10 ${
+//                                     process.env.NEXT_PUBLIC_PANEL_SWAP ===
+//                                     "true"
+//                                         ? "flex-row-reverse"
+//                                         : ""
+//                                 }`}
+//                             >
+//                                 <PanelSection
+//                                     candidateList={(panelA as any) ?? []}
+//                                     name="A"
+//                                     color="green"
+//                                 />
+//                                 <PanelSection
+//                                     candidateList={(panelB as any) ?? []}
+//                                     name="B"
+//                                     color="red"
+//                                 />
+//                             </div>
+
+//                             <div className="flex justify-center items-center my-10">
+//                                 <Button
+//                                     classNames={{
+//                                         root: "disabled:bg-green-800!  disabled:text-white! disabled:opacity-50",
+//                                     }}
+//                                     disabled={selectedCandidates.length !== 15}
+//                                     onClick={() => {
+//                                         setStep("confirmation");
+//                                     }}
+//                                     radius={10}
+//                                     w={400}
+//                                     size="lg"
+//                                 >
+//                                     Next
+//                                 </Button>
+//                             </div>
+//                         </div>
+//                     )}
+//                 </div>
+//             )}
+//         </div>
+//     );
+
+//     const renderConfirmationStep = (
+//         <div className=" max-w-5xl mx-auto">
+//             <div ref={printRef}>
+//                 <CandidateSelectionPrint />
+//             </div>
+//             <div className="flex justify-center items-center my-10 gap-10">
+//                 <Button
+//                     classNames={{
+//                         root: "disabled:bg-green-800!  disabled:text-white! disabled:opacity-50",
+//                     }}
+//                     variant="outline"
+//                     onClick={() => setStep("selection")}
+//                     radius={10}
+//                     w={400}
+//                     size="lg"
+//                 >
+//                     Back
+//                 </Button>
+//                 <Button
+//                     classNames={{
+//                         root: "disabled:bg-green-800!  disabled:text-white! disabled:opacity-50",
+//                     }}
+//                     disabled={selectedCandidates.length !== 15}
+//                     onClick={handleSubmitVote}
+//                     radius={10}
+//                     w={400}
+//                     size="lg"
+//                 >
+//                     Print & Submit
+//                 </Button>
+//             </div>
+//         </div>
+//     );
+
+//     return (
+//         <div className="flex mx-auto">
+//             {step === "selection"
+//                 ? renderSelectionStep
+//                 : renderConfirmationStep}
+//         </div>
+//     );
+// }
+
+// const PanelSection = (props: {
+//     name: string;
+//     candidateList: SortedCandidate[];
+//     color: "red" | "green";
+// }) => {
+//     return (
+//         <div className="flex-1 space-y-2 mt-5">
+//             <h1 className="text-center text-2xl">Panel {props.name}</h1>
+//             <div
+//                 className={`p-5 rounded-2xl space-y-3 ${
+//                     props.color === "red" ? "bg-red-800/10" : "bg-green-800/10"
+//                 }`}
+//             >
+//                 {props.candidateList?.map((x, i) => (
+//                     <CandidateCard
+//                         key={x.id}
+//                         panel={props.name}
+//                         data={x}
+//                         index={i + 1}
+//                     />
+//                 ))}
+//             </div>
+//         </div>
+//     );
+// };
+
+// const CandidateCard = (props: {
+//     panel: string;
+//     data: SortedCandidate;
+//     index: number;
+// }) => {
+//     const selectedCandidates = useVoteStore((s) => s.selectedCandidates);
+//     const selectCandidate = useVoteStore((s) => s.selectCandidate);
+//     const unSelectCandidate = useVoteStore((s) => s.unSelectCandidate);
+
+//     const checked = selectedCandidates.some((x) => x.uuid === props.data.uuid);
+
+//     // 👇 compute disable directly
+//     const disabled = (() => {
+//         if (checked) return false;
+//         const sameType = selectedCandidates.filter(
+//             (x) => x.type === props.data.type
+//         );
+//         switch (props.data.type) {
+//             case "Vice President":
+//                 return sameType.length >= 2;
+//             case "Executive Secretary":
+//                 return sameType.length >= 5;
+//             default:
+//                 return sameType.length >= 1;
+//         }
+//     })();
+
+//     return (
+//         <div
+//             onClick={() => {
+//                 if (disabled && !checked) return; // prevent click when disabled
+//                 checked
+//                     ? unSelectCandidate(props.data)
+//                     : selectCandidate(props.data);
+//             }}
+//             className={`select-none flex gap-5 bg-white items-center border-2 rounded-xl px-5 py-2 ${
+//                 checked ? "border-green-800" : "border-transparent"
+//             } ${disabled ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}`}
+//         >
+//             <div
+//                 className={`border-2 rounded-lg ${
+//                     checked ? "border-primary" : " border-gray-400"
+//                 }`}
+//             >
+//                 <AiOutlineCheck
+//                     className={` text-primary size-10 ${
+//                         checked ? "" : "opacity-0"
+//                     }`}
+//                 />
+//             </div>
+//             <div className="size-25 rounded-full">
+//                 <Image
+//                     src={getBucketURL(props.data?.photo_url as string)}
+//                     alt={props.data.name}
+//                     className="h-full w-full object-top"
+//                 />
+//             </div>
+//             <div>
+//                 <h1 className="text-2xl">{props.data?.name}</h1>
+//                 <p className="font-semibold">{props.data?.type}</p>
+//             </div>
+//         </div>
+//     );
+// };
