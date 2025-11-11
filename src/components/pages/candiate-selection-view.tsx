@@ -170,7 +170,7 @@ export default function CandidateSelectionView() {
                             {/* Vice Presidents */}
                             <div>
                                 <h1 className="text-2xl font-bold text-center mt-5">
-                                    Vice President (Any 2)
+                                    Vote two from following four
                                 </h1>
                                 <div
                                     className={`flex gap-10 ${
@@ -219,7 +219,7 @@ export default function CandidateSelectionView() {
                             {/*  Executive Secretary */}
                             <div>
                                 <h1 className="text-2xl font-bold text-center mt-5">
-                                    Executive Secretary (Any 5)
+                                    Vote five from the following ten
                                 </h1>
                                 <div
                                     className={`flex gap-10 ${
