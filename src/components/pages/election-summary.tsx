@@ -43,7 +43,7 @@ export default function ElectionSummary() {
                     color="green"
                     list={(panelA as any) ?? []}
                 />
-                <PanelPrint
+                <PanelPrint 
                     title="Panel B"
                     color="red"
                     list={(panelB as any) ?? []}
