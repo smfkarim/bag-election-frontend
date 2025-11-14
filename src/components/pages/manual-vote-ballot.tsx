@@ -21,11 +21,11 @@ export default function ManualVoteBallot() {
     const panelATitle =
         process.env.NEXT_PUBLIC_SHOW_PANEL_TITLE === "true"
             ? PANEL_A_TITLE
-            : { panelATitle };
+            : "Panel A";
     const panelBTitle =
         process.env.NEXT_PUBLIC_SHOW_PANEL_TITLE === "true"
             ? PANEL_B_TITLE
-            : { panelBTitle };
+            : "Panel B";
 
     return (
         <div className="a4-page bg-white text-black p-10 flex flex-col justify-between">
