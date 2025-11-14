@@ -105,4 +105,5 @@ export interface Voter {
     address?: string;
     secret_key: string;
     booth_id: null | string;
+    ballot_number: string;
 }

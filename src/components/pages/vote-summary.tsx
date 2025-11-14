@@ -60,7 +60,7 @@ export default function VoteSummary() {
 
                 <div className="flex-1 text-center">
                     <h1 className="text-2xl font-bold text-green-800 uppercase">
-                        Official Ballot Paper 
+                        Official Ballot Paper
                     </h1>
                     <p className="text-sm text-gray-700">
                         Ballot Number: {ballotNumber || "—"}
@@ -74,7 +74,7 @@ export default function VoteSummary() {
             </header>
 
             {/* PANELS */}
-            <main className="grid grid-cols-2 gap-6 flex-1 items-stretch">
+            <main className="grid grid-cols-2 gap-6 flex-1 items-stretch ">
                 <PanelPrint title="Panel A" color="green" list={panelA ?? []} />
                 <PanelPrint title="Panel B" color="red" list={panelB ?? []} />
             </main>
@@ -106,7 +106,7 @@ const PanelPrint = ({
                     color === "green" ? "text-green-700" : "text-red-700"
                 }`}
             >
-                {title} 
+                {title}
             </h2>
 
             <table className="w-full  text-sm flex-1 justify-start">
