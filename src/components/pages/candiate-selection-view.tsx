@@ -13,6 +13,7 @@ import { useRef, useState } from "react";
 import { AiOutlineCheck } from "react-icons/ai";
 import { useReactToPrint } from "react-to-print";
 import CandidateSelectionPrint from "./candiate-selection-print";
+import { PANEL_A_TITLE, PANEL_B_TITLE } from "@/constants";
 
 export type TCandidate = {
     id: number;
@@ -70,6 +71,8 @@ export default function CandidateSelectionView() {
                             Cancel
                         </Button>
                         <Button
+                            disabled={giveVoteMutation.isPending}
+                            loading={giveVoteMutation.isPending}
                             onClick={async (e) => {
                                 e.preventDefault();
                                 try {
@@ -85,8 +88,8 @@ export default function CandidateSelectionView() {
                                     reactToPrintFn();
                                     modals.closeAll();
                                     setTimeout(() => router.replace("/"), 1000);
-                                } catch {
-                                    console.log("E");
+                                } catch (error) {
+                                    console.error(error);
                                 }
                             }}
                         >
@@ -316,8 +319,6 @@ const AllPanelSection = (props: {
     candidateList: SortedCandidate[];
     color: "red" | "green";
 }) => {
-    console.log(props?.candidateList);
-
     const all = props.candidateList.filter(
         (candidate) =>
             candidate.type !== "President" &&
@@ -351,14 +352,20 @@ const PanelSection = (props: {
     candidateList: SortedCandidate[];
     color: "red" | "green";
 }) => {
-    console.log(props?.candidateList);
-
     const presidents = props.candidateList.filter(
         (candidate) => candidate.type === props.type
     );
+
+    const panelTitle =
+        process.env.NEXT_PUBLIC_SHOW_PANEL_TITLE === "true" ? (
+            <>{props.name === "A" ? PANEL_A_TITLE : PANEL_B_TITLE}</>
+        ) : (
+            <>Panel {props.name}</>
+        );
+
     return (
         <div className="flex-1 space-y-2 mt-5">
-            <h1 className="text-center text-2xl">Panel {props.name}</h1>
+            <h1 className="text-center text-2xl">{panelTitle}</h1>
             <div
                 className={`p-5 rounded-2xl space-y-3 ${
                     props.color === "red" ? "bg-red-800/10" : "bg-green-800/10"
@@ -384,7 +391,6 @@ const VicePresidentPanelSection = (props: {
     candidateList: SortedCandidate[];
     color: "red" | "green";
 }) => {
-    console.log(props?.candidateList);
     const vicePresidents = props.candidateList.filter(
         (candidate) => candidate.type === props.type
     );

@@ -8,7 +8,7 @@ import dayjs from "dayjs";
 import { useParams } from "next/navigation";
 
 export default function ElectionSummary() {
-    const { electionId } = useParams<{ electionId: string }>();
+    // const { electionId } = useParams<{ electionId: string }>();
     const { panelA, panelB } = useGetPanelWiseVoteCountList();
 
     // fetch electionData by electionId
@@ -25,9 +25,9 @@ export default function ElectionSummary() {
                     <h1 className="text-2xl font-bold text-green-800 uppercase">
                         Election Summary
                     </h1>
-                    <p className="text-sm text-gray-700">
+                    {/* <p className="text-sm text-gray-700">
                         Election Identifier: {electionId || "—"}
-                    </p>
+                    </p> */}
                 </div>
 
                 <div className="text-right text-sm">
@@ -43,7 +43,7 @@ export default function ElectionSummary() {
                     color="green"
                     list={(panelA as any) ?? []}
                 />
-                <PanelPrint 
+                <PanelPrint
                     title="Panel B"
                     color="red"
                     list={(panelB as any) ?? []}

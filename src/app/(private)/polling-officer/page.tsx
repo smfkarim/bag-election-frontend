@@ -13,6 +13,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { FiSearch } from "react-icons/fi";
 import { MdOutlinePersonOff } from "react-icons/md";
+import { useVoteStore } from "../election/vote/vote.store";
 
 type SearchMethod = "national_id" | "email" | "phone" | "full_name";
 
@@ -49,6 +50,7 @@ export default function Page() {
             let x = data?.voters[0];
             router.push(`/polling-officer/voter/${x.uuid}`);
             useVoterStore.setState({ voter: x as any });
+            useVoteStore.setState({ ballotNumber: x.ballot_number });
         }
     }, [data]);
 

@@ -2,6 +2,7 @@
 
 import { TForeignId } from "@/@types";
 import { useVoteStore } from "@/app/(private)/election/vote/vote.store";
+import { PANEL_A_TITLE, PANEL_B_TITLE } from "@/constants";
 import { getBucketURL } from "@/lib/helpers";
 import { useGetPanelWiseCandidates } from "@/services/api/candidate.api";
 import { Image } from "@mantine/core";
@@ -12,8 +13,22 @@ export default function ManualVoteBallot() {
     const { ballotNumber } = useParams<{ ballotNumber: string }>();
     const { panelA, panelB } = useGetPanelWiseCandidates();
 
+    /** PANEL SWAP LOGIC */
+    const swap = process.env.NEXT_PUBLIC_PANEL_SWAP === "true";
+    const orderA = swap ? "order-2" : "order-1";
+    const orderB = swap ? "order-1" : "order-2";
+
+    const panelATitle =
+        process.env.NEXT_PUBLIC_SHOW_PANEL_TITLE === "true"
+            ? PANEL_A_TITLE
+            : "Panel A";
+    const panelBTitle =
+        process.env.NEXT_PUBLIC_SHOW_PANEL_TITLE === "true"
+            ? PANEL_B_TITLE
+            : "Panel B";
+
     return (
-        <div className="a4-page bg-white text-black p-10  flex flex-col justify-between">
+        <div className="a4-page bg-white text-black p-10 flex flex-col justify-between">
             {/* HEADER */}
             <header className="flex items-center justify-between border-b pb-3 mb-4 shrink-0">
                 <div className="w-20">
@@ -36,73 +51,94 @@ export default function ManualVoteBallot() {
             </header>
 
             <div className="border border-gray-400 rounded-md p-1">
-                {/* PANELS */}
-                <div>
-                    <main className="grid grid-cols-2 gap-6 flex-1 items-stretch">
+                {/* PRESIDENTS */}
+                <main className="grid grid-cols-2 gap-6 flex-1 items-stretch">
+                    <div className={orderA}>
                         <PresidentsPanelPrint
-                            title="Panel A"
+                            title={panelATitle}
                             color="green"
                             list={(panelA as any) ?? []}
                         />
+                    </div>
+
+                    <div className={orderB}>
                         <PresidentsPanelPrint
-                            title="Panel B"
+                            title={panelBTitle}
                             color="red"
                             list={(panelB as any) ?? []}
                         />
-                    </main>
-                </div>
+                    </div>
+                </main>
 
-                {/* Vice Presidents */}
+                {/* VICE PRESIDENTS */}
                 <div>
-                    <h1 className="text-base font-semibold text-center">
+                    <h1 className="text-base font-semibold text-center mt-2">
                         Vote two from the following four
                     </h1>
+
                     <main className="grid grid-cols-2 gap-6 flex-1 items-stretch">
-                        <VicePresidentsPanelPrint
-                            title="Panel A"
-                            color="green"
-                            list={(panelA as any) ?? []}
-                        />
-                        <VicePresidentsPanelPrint
-                            title="Panel B"
-                            color="red"
-                            list={(panelB as any) ?? []}
-                        />
+                        <div className={orderA}>
+                            <VicePresidentsPanelPrint
+                                title={panelATitle}
+                                color="green"
+                                list={(panelA as any) ?? []}
+                            />
+                        </div>
+
+                        <div className={orderB}>
+                            <VicePresidentsPanelPrint
+                                title={panelBTitle}
+                                color="red"
+                                list={(panelB as any) ?? []}
+                            />
+                        </div>
                     </main>
                 </div>
 
-                {/* Others Alls */}
+                {/* OTHERS */}
                 <div>
                     <div className="h-px bg-black mt-5"></div>
                     <main className="grid grid-cols-2 gap-6 flex-1 items-stretch mt-2">
-                        <OthersAllsPanelPrint
-                            title="Panel A"
-                            color="green"
-                            list={(panelA as any) ?? []}
-                        />
-                        <OthersAllsPanelPrint
-                            title="Panel B"
-                            color="red"
-                            list={(panelB as any) ?? []}
-                        />
+                        <div className={orderA}>
+                            <OthersAllsPanelPrint
+                                title={panelATitle}
+                                color="green"
+                                list={(panelA as any) ?? []}
+                            />
+                        </div>
+
+                        <div className={orderB}>
+                            <OthersAllsPanelPrint
+                                title={panelBTitle}
+                                color="red"
+                                list={(panelB as any) ?? []}
+                            />
+                        </div>
                     </main>
                 </div>
-                {/* Executive Secretary  */}
+
+                {/* SECRETARY */}
                 <div>
-                    <h1 className="text-base font-semibold text-center">
+                    <h1 className="text-base font-semibold text-center mt-2">
                         Vote five from the following ten
                     </h1>
+
                     <main className="grid grid-cols-2 gap-6 flex-1 items-stretch mt-2">
-                        <ExecutiveSecretaryPanelPrint
-                            title="Panel A"
-                            color="green"
-                            list={(panelA as any) ?? []}
-                        />
-                        <ExecutiveSecretaryPanelPrint
-                            title="Panel B"
-                            color="red"
-                            list={(panelB as any) ?? []}
-                        />
+                        <div className={orderA}>
+                            <ExecutiveSecretaryPanelPrint
+                                title={panelATitle}
+                                color="green"
+                                list={(panelA as any) ?? []}
+                            />
+                        </div>
+
+                        <div className={orderB}>
+                            <ExecutiveSecretaryPanelPrint
+                                title={panelBTitle}
+                                color="red"
+                                list={(panelB as any) ?? []}
+                            />
+                        </div>
                     </main>
                 </div>
             </div>
@@ -115,264 +151,101 @@ export default function ManualVoteBallot() {
     );
 }
 
-//
-const PresidentsPanelPrint = ({
+/* -----------------------------------------
+   COMPONENTS
+----------------------------------------- */
+
+const PresidentsPanelPrint = ({ title, color, list }: any) => {
+    const presidents = list.filter(
+        (candidate: any) => candidate.type === "President"
+    );
+    return <PanelTable title={title} color={color} candidates={presidents} />;
+};
+
+const VicePresidentsPanelPrint = ({ title, color, list }: any) => {
+    const filtered = list.filter(
+        (candidate: any) => candidate.type === "Vice President"
+    );
+    return <PanelTable color={color} candidates={filtered} />;
+};
+
+const OthersAllsPanelPrint = ({ title, color, list }: any) => {
+    const filtered = list.filter(
+        (candidate: any) =>
+            candidate.type !== "President" &&
+            candidate.type !== "Vice President" &&
+            candidate.type !== "Executive Secretary"
+    );
+    return <PanelTable color={color} candidates={filtered} />;
+};
+
+const ExecutiveSecretaryPanelPrint = ({ title, color, list }: any) => {
+    const filtered = list.filter(
+        (candidate: any) => candidate.type === "Executive Secretary"
+    );
+    return <PanelTable color={color} candidates={filtered} />;
+};
+
+/* -----------------------------------------
+   REUSABLE TABLE COMPONENT
+----------------------------------------- */
+
+const PanelTable = ({
     title,
     color,
-    list,
+    candidates,
 }: {
-    title: string;
-    color: "red" | "green";
-    list: {
-        panelId: string;
-        name: string;
-        type: string;
-        id: TForeignId;
-        photo_url: string;
-        uuid: string;
-    }[];
+    title?: string;
+    color: string;
+    candidates: any[];
 }) => {
-    const presidents = list.filter(
-        (candidate) => candidate.type === "President"
-    );
-    const selectedCandidates = useVoteStore(
-        (state) => state.selectedCandidates
-    );
     return (
         <div className="p-1 flex flex-col h-full">
-            <h2
-                className={`text-center font-semibold ${
-                    color === "green" ? "text-green-700" : "text-red-700"
-                }`}
-            >
-                {title}
-            </h2>
+            {title ? (
+                <h2
+                    className={`text-center font-semibold ${
+                        color === "green" ? "text-green-700" : "text-red-700"
+                    }`}
+                >
+                    {title}
+                </h2>
+            ) : null}
 
-            <table className="w-full  text-sm flex-1 justify-start">
-                <thead className=" border-b ">
-                    <tr className="">
-                        <th className="p-1 w-6 text-left">#</th>
-                        <th className="p-1 w-6 text-left">Photo</th>
+            <table className="w-full text-sm flex-1 justify-start">
+                <thead className="border-b">
+                    <tr>
+                        <th className="p-1 w-6">#</th>
+                        <th className="p-1 w-10 text-left">Photo</th>
                         <th className="p-1 text-left">Candidate</th>
                         <th className="p-1 text-left">Type</th>
                         <th className="p-1 w-6 text-center">✓</th>
                     </tr>
                 </thead>
-                <tbody>
-                    {presidents.map((c, i) => {
-                        const isChecked = !!selectedCandidates.find(
-                            (s) => s.uuid === c.uuid
-                        );
-                        return (
-                            <tr
-                                key={i}
-                                className=" border-b last:border-none h-10"
-                            >
-                                <td className="p-1">{i + 1}</td>
-                                <td>
-                                    <div className=" size-10 my-1 mx-auto">
-                                        <Image
-                                            className=" object-contain object-top h-full w-full"
-                                            src={getBucketURL(c.photo_url)}
-                                        />
-                                    </div>
-                                </td>
-                                <td className="p-1 text-xs">{c.name}</td>
-                                <td className="p-1 text-xs text-gray-600">
-                                    {c.type ?? ""}
-                                </td>
-                                <td className="p-1 text-center">
-                                    <div className="border size-6 rounded-sm" />
-                                </td>
-                            </tr>
-                        );
-                    })}
-                </tbody>
-            </table>
-        </div>
-    );
-};
 
-// Vice Presidents
-const VicePresidentsPanelPrint = ({
-    title,
-    color,
-    list,
-}: {
-    title: string;
-    color: "red" | "green";
-    list: {
-        panelId: string;
-        name: string;
-        type: string;
-        id: TForeignId;
-        photo_url: string;
-        uuid: string;
-    }[];
-}) => {
-    const vicePresidents = list.filter(
-        (candidate) => candidate.type === "Vice President"
-    );
-    const selectedCandidates = useVoteStore(
-        (state) => state.selectedCandidates
-    );
-    return (
-        <div className="p-1 flex flex-col h-full">
-            <table className="w-full  text-sm flex-1 justify-start">
                 <tbody>
-                    {vicePresidents.map((c, i) => {
-                        const isChecked = !!selectedCandidates.find(
-                            (s) => s.uuid === c.uuid
-                        );
-                        return (
-                            <tr
-                                key={i}
-                                className=" border-b last:border-none h-10"
-                            >
-                                <td className="p-1">{i + 1}</td>
-                                <td>
-                                    <div className=" size-10 my-1 mx-auto">
-                                        <Image
-                                            className=" object-contain object-top h-full w-full"
-                                            src={getBucketURL(c.photo_url)}
-                                        />
-                                    </div>
-                                </td>
-                                <td className="p-1 text-xs">{c.name}</td>
-                                <td className="p-1 text-xs text-gray-600">
-                                    {c.type ?? ""}
-                                </td>
-                                <td className="p-1 text-center">
-                                    <div className="border size-6 rounded-sm" />
-                                </td>
-                            </tr>
-                        );
-                    })}
-                </tbody>
-            </table>
-        </div>
-    );
-};
+                    {candidates.map((c, i) => (
+                        <tr key={i} className="border-b last:border-none h-10">
+                            <td className="p-1">{i + 1}</td>
 
-// Others Alls
-const OthersAllsPanelPrint = ({
-    title,
-    color,
-    list,
-}: {
-    title: string;
-    color: "red" | "green";
-    list: {
-        panelId: string;
-        name: string;
-        type: string;
-        id: TForeignId;
-        photo_url: string;
-        uuid: string;
-    }[];
-}) => {
-    const vicePresidents = list.filter(
-        (candidate) =>
-            candidate.type !== "President" &&
-            candidate.type !== "Vice President" &&
-            candidate.type !== "Executive Secretary"
-    );
-    const selectedCandidates = useVoteStore(
-        (state) => state.selectedCandidates
-    );
-    return (
-        <div className="p-1 flex flex-col h-full">
-            <table className="w-full  text-sm flex-1 justify-start">
-                <tbody>
-                    {vicePresidents.map((c, i) => {
-                        const isChecked = !!selectedCandidates.find(
-                            (s) => s.uuid === c.uuid
-                        );
-                        return (
-                            <tr
-                                key={i}
-                                className=" border-b last:border-none h-10"
-                            >
-                                <td className="p-1">{i + 1}</td>
-                                <td>
-                                    <div className=" size-10 my-1 mx-auto">
-                                        <Image
-                                            className=" object-contain object-top h-full w-full"
-                                            src={getBucketURL(c.photo_url)}
-                                        />
-                                    </div>
-                                </td>
-                                <td className="p-1 text-xs">{c.name}</td>
-                                <td className="p-1 text-xs text-gray-600">
-                                    {c.type ?? ""}
-                                </td>
-                                <td className="p-1 text-center">
-                                    <div className="border size-6 rounded-sm" />
-                                </td>
-                            </tr>
-                        );
-                    })}
-                </tbody>
-            </table>
-        </div>
-    );
-};
+                            <td>
+                                <div className="size-10 my-1 mx-auto">
+                                    <Image
+                                        className="object-contain object-top h-full w-full"
+                                        src={getBucketURL(c.photo_url)}
+                                    />
+                                </div>
+                            </td>
 
-// Executive Secretary
-const ExecutiveSecretaryPanelPrint = ({
-    title,
-    color,
-    list,
-}: {
-    title: string;
-    color: "red" | "green";
-    list: {
-        panelId: string;
-        name: string;
-        type: string;
-        id: TForeignId;
-        photo_url: string;
-        uuid: string;
-    }[];
-}) => {
-    const executiveSecretary = list.filter(
-        (candidate) => candidate.type === "Executive Secretary"
-    );
-    const selectedCandidates = useVoteStore(
-        (state) => state.selectedCandidates
-    );
-    return (
-        <div className="p-1 flex flex-col h-full">
-            <table className="w-full  text-sm flex-1 justify-start">
-                <tbody>
-                    {executiveSecretary.map((c, i) => {
-                        const isChecked = !!selectedCandidates.find(
-                            (s) => s.uuid === c.uuid
-                        );
-                        return (
-                            <tr
-                                key={i}
-                                className=" border-b last:border-none h-10"
-                            >
-                                <td className="p-1">{i + 1}</td>
-                                <td>
-                                    <div className=" size-10 my-1 mx-auto">
-                                        <Image
-                                            className=" object-contain object-top h-full w-full"
-                                            src={getBucketURL(c.photo_url)}
-                                        />
-                                    </div>
-                                </td>
-                                <td className="p-1 text-xs">{c.name}</td>
-                                <td className="p-1 text-xs text-gray-600">
-                                    {c.type ?? ""}
-                                </td>
-                                <td className="p-1 text-center">
-                                    <div className="border size-6 rounded-sm" />
-                                </td>
-                            </tr>
-                        );
-                    })}
+                            <td className="p-1 text-xs">{c.name}</td>
+                            <td className="p-1 text-xs text-gray-600">
+                                {c.type}
+                            </td>
+
+                            <td className="p-1 text-center">
+                                <div className="border size-6 rounded-sm" />
+                            </td>
+                        </tr>
+                    ))}
                 </tbody>
             </table>
         </div>

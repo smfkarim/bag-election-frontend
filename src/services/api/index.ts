@@ -1,5 +1,6 @@
 import { parseErrorMessage } from "@/lib/helpers";
 import { useAuthStore } from "@/store/auth-store";
+import { useDevSettings } from "@/store/dev-settings-store";
 import { notifications } from "@mantine/notifications";
 import axios, {
     AxiosError,
@@ -7,9 +8,9 @@ import axios, {
     InternalAxiosRequestConfig,
 } from "axios";
 import { signOut } from "next-auth/react";
-
+console.log(useDevSettings.getState().apiBaseUrl, "LL");
 const api = axios.create({
-    baseURL: process.env.NEXT_PUBLIC_API_URL,
+    baseURL: useDevSettings.getState().apiBaseUrl,
     timeout: 30000, // 30 seconds
     headers: {
         "Content-Type": "application/json",
