@@ -8,9 +8,9 @@ import axios, {
     InternalAxiosRequestConfig,
 } from "axios";
 import { signOut } from "next-auth/react";
-console.log(useDevSettings.getState().apiBaseUrl, "LL");
+// console.log(useDevSettings.getState().apiBaseUrl, "LL");
 const api = axios.create({
-    baseURL: useDevSettings.getState().apiBaseUrl,
+    baseURL: process.env.NEXT_PUBLIC_API_URL!,
     timeout: 30000, // 30 seconds
     headers: {
         "Content-Type": "application/json",

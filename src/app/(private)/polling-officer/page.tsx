@@ -121,6 +121,7 @@ export default function Page() {
                             />
 
                             <Button
+                                loading={isLoading}
                                 fullWidth
                                 type="submit"
                                 rightSection={<FiSearch size={16} />}
