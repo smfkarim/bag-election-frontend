@@ -32,9 +32,8 @@ export const useVoterSearchQuery = (
 
 export const useSendSixDigitCodeMutation = () =>
     useMutation({
-        mutationKey: ["send-six-digit-code"],
         mutationFn: (payload: {
-            type: "mail" | "both" | "print" | "ballot";
+            type: "mail" | "both" | "print" | "ballot" | "show_secret";
             user_id: TForeignId;
             device_info: TForeignId;
             uuid: string;

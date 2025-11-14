@@ -1,5 +1,6 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
 import api from ".";
+import { ElectionStatusResponse } from "@/@types/election";
 
 export const useGetBallotInfoMutation = () =>
     useMutation({
@@ -23,3 +24,16 @@ interface BallotCandidate {
     booth_id: null;
     cast_time: string;
 }
+
+export const useVoteStatus = (voter_id?: string) => {
+    return useQuery({
+        enabled: !!voter_id,
+        queryKey: ["vote-status"],
+        queryFn: async () =>
+            (
+                await api.post<{ data: ElectionStatusResponse }>(`/v1/status`, {
+                    voter_id,
+                })
+            ).data.data,
+    });
+};

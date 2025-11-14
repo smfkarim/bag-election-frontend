@@ -1,78 +1,112 @@
 "use client";
+import { useVoteStore } from "@/app/(private)/election/vote/vote.store";
 import ManualVoteBallot from "@/components/pages/manual-vote-ballot";
 import useAuth from "@/hooks/useAuth";
 import { useFullDeviceInfo } from "@/hooks/useFullDeviceInfo";
 import { getBucketURL } from "@/lib/helpers";
+import { useGetBoothList } from "@/services/api/booth.api";
 import { useSendSixDigitCodeMutation } from "@/services/api/poll-officer.api";
+import { useVoteStatus } from "@/services/api/vote.api";
 import { useVoterStore } from "@/store/voter-store";
-import { Button, Image } from "@mantine/core";
+import { Button, Image, Select } from "@mantine/core";
 import { modals } from "@mantine/modals";
 import { notifications } from "@mantine/notifications";
 import dayjs from "dayjs";
-import { useRouter } from "next/navigation";
-import { useRef, useState } from "react";
+import { useParams, useRouter } from "next/navigation";
+import { useEffect, useRef, useState } from "react";
 import { AiOutlineKey, AiOutlinePrinter, AiOutlineSend } from "react-icons/ai";
 import { MdArrowBackIosNew } from "react-icons/md";
 import { useReactToPrint } from "react-to-print";
 
 export default function VoterDetails() {
-    const { device, loading, error } = useFullDeviceInfo();
     const sixDigitKeySendEmailMutation = useSendSixDigitCodeMutation();
     const sixDigitKeyPrintMutation = useSendSixDigitCodeMutation();
     const sixDigitKeyPrintBallotMutation = useSendSixDigitCodeMutation();
+    const doBothMutation = useSendSixDigitCodeMutation();
     const { voter } = useVoterStore();
     const { userId } = useAuth();
-    const [ballotPrinted, setBallotPrinted] = useState(false); // this case will be handled later.
+    const { voterId } = useParams<{ voterId: string }>();
     const router = useRouter();
     const printRef = useRef<HTMLDivElement>(null);
     const reactToPrintFn = useReactToPrint({
         contentRef: printRef,
         documentTitle: "Ballot Paper",
     });
+    const { data: voteStatus, refetch } = useVoteStatus(voterId);
+
     const [boothId, setBoothId] = useState<null | string>(null);
     const [secretKeyShown, setSecretKeyShown] = useState(false);
+    const { data: boothList } = useGetBoothList({
+        per_page: 100,
+        page: 1,
+    });
+    const info = {
+        booth_id: boothId,
+        device_info: "PL:XN:53:WQ:6I:VR",
+        user_id: userId ?? "",
+        uuid: voterId,
+    };
+
+    useEffect(() => {
+        setBoothId(voteStatus?.six_digit_key.booth_id?.toString() ?? "");
+        useVoteStore.setState({
+            ballotNumber: voteStatus?.eight_digit_key.secret_key,
+        });
+    }, [voteStatus]);
 
     const sendSecretKey = async () => {
         try {
             await sixDigitKeySendEmailMutation.mutateAsync({
                 type: "mail",
-                device_info: device?.hostname ?? "",
-                user_id: userId ?? "",
-                uuid: voter?.uuid ?? "",
+                ...info,
             });
             notifications.show({
                 title: "Success",
                 message: "Secret key sent to voter's email",
             });
-        } catch {}
+        } finally {
+            refetch();
+        }
     };
 
     const printSecretKey = async () => {
         try {
             await sixDigitKeyPrintMutation.mutateAsync({
                 type: "print",
-                device_info: device?.hostname ?? "",
-                user_id: userId ?? "",
-                uuid: voter?.uuid ?? "",
+                ...info,
             });
             notifications.show({
                 title: "Success",
                 message: "Secret Key printed successfully",
             });
-        } catch {}
+        } finally {
+            refetch();
+        }
     };
 
     const doBoth = async () => {
         try {
-            // we don't need both api call
-            await sendSecretKey();
-            setTimeout(async () => {
-                await printSecretKey();
-            }, 2000);
-        } catch {}
+            await doBothMutation.mutateAsync({
+                type: "both",
+                ...info,
+            });
+        } finally {
+            refetch();
+            notifications.show({
+                message: "Secret Key sent and Printing",
+            });
+        }
     };
 
-    const printBallotPaper = () => {
+    const handleShowSecureCode = async () => {
+        await sixDigitKeySendEmailMutation.mutateAsync({
+            type: "show_secret",
+            ...info,
+        });
+        setSecretKeyShown((v) => !v);
+    };
+
+    const printBallotPaper = async () => {
         modals.open({
             closeOnClickOutside: false,
             centered: true,
@@ -95,23 +129,21 @@ export default function VoterDetails() {
                         <Button
                             onClick={async () => {
                                 try {
-                                    setBallotPrinted(true);
-                                    // await sixDigitKeyPrintBallotMutation.mutateAsync(
-                                    //     {
-                                    //         type: "ballot",
-                                    //         device_info: "123456",
-                                    //         user_id: userId ?? "",
-                                    //         uuid: voter?.uuid ?? "",
-                                    //     }
-                                    // );
+                                    await sixDigitKeyPrintBallotMutation.mutateAsync(
+                                        {
+                                            type: "ballot",
+                                            ...info,
+                                        }
+                                    );
                                     reactToPrintFn();
                                 } finally {
-                                    // notifications.show({
-                                    //     title: "Success",
-                                    //     message:
-                                    //         "Ballot paper printed successfully",
-                                    // });
+                                    notifications.show({
+                                        title: "Success",
+                                        message:
+                                            "Ballot paper printed successfully",
+                                    });
                                     modals.closeAll();
+                                    refetch();
                                 }
                             }}
                         >
@@ -123,8 +155,13 @@ export default function VoterDetails() {
         });
     };
 
-    // if (loading) return <div>Device is loading...</div>;
-    // if (error) return <div>Got error to load device info</div>;
+    const printBallotPaperDisabled =
+        !boothId || voteStatus?.eight_digit_key.ballot_print_status;
+    const secretPrintOrSendDisabled =
+        !boothId ||
+        printBallotPaperDisabled ||
+        voteStatus?.six_digit_key.status;
+
     if (!voter) return <div>Voter not found.</div>;
 
     return (
@@ -150,114 +187,136 @@ export default function VoterDetails() {
                     </div>
                 </div>
 
-                {/* Back */}
-                <div
-                    onClick={() => {
-                        router.back();
-                    }}
-                    className="flex items-center gap-3 bg-gray-200 w-fit ml-auto px-5 py-3 rounded-2xl hover:opacity-80 hover:cursor-pointer"
-                >
-                    <MdArrowBackIosNew /> Back To Search
-                </div>
-
                 {/* Information section */}
 
-                <section className=" bg-gray-100 p-10  rounded-2xl space-y-5">
-                    <div className=" border-4 border-primary/30  w-36 h-40  bg-white shadow-2xl rounded-2xl">
-                        <img
-                            src={
-                                voter?.photo_url
-                                    ? getBucketURL(voter?.photo_url as string)
-                                    : "/placeholder.jpg"
-                            }
-                            className=" h-full w-full object-cover rounded-xl "
-                        />
+                <section className=" bg-gray-100 p-10  rounded-2xl space-y-10">
+                    {/* Back */}
+                    <div
+                        onClick={() => {
+                            router.back();
+                        }}
+                        className="flex items-center gap-3 bg-gray-200 w-fit ml-auto px-5 py-3 rounded-2xl hover:opacity-80 hover:cursor-pointer"
+                    >
+                        <MdArrowBackIosNew /> Back To Search
                     </div>
 
-                    {/* Info card */}
+                    <div className="flex flex-col sm:flex-row gap-5">
+                        <div className="border-4 border-primary/30  w-40 h-50  bg-white shadow-2xl rounded-2xl">
+                            <img
+                                src={
+                                    voter?.photo_url
+                                        ? getBucketURL(
+                                              voter?.photo_url as string
+                                          )
+                                        : "/placeholder.jpg"
+                                }
+                                className=" h-full w-full object-cover rounded-xl "
+                            />
+                        </div>
+                        {/* Info card */}
 
-                    <div className=" bg-white px-10 py-10 rounded-2xl shadow-xl grid grid-cols-1  sm:grid-cols-2 gap-5">
-                        <LabelValueCard
-                            label="Name"
-                            value={`${voter?.first_name} ${
-                                voter?.middle_name ?? ""
-                            } ${voter?.last_name}`}
-                        />
-                        <LabelValueCard
-                            label="Photo ID"
-                            value={voter?.national_id ?? ""}
-                        />
-                        <LabelValueCard
-                            label="Contact Number"
-                            value={voter?.phone}
-                        />
-                        <LabelValueCard
-                            label="Voter ID"
-                            value={voter?.voter_id_generated ?? ""}
-                        />
-                        <LabelValueCard label="Email" value={voter?.email} />
-                        <LabelValueCard
-                            label="Address"
-                            value={voter?.address}
-                        />
+                        <div className=" flex-1 bg-white px-10 py-10 rounded-2xl shadow-xl grid   sm:grid-cols-2 gap-5">
+                            <LabelValueCard
+                                label="Name"
+                                value={`${voter?.first_name} ${
+                                    voter?.middle_name ?? ""
+                                } ${voter?.last_name}`}
+                            />
+                            <LabelValueCard
+                                label="Photo ID"
+                                value={voter?.national_id ?? ""}
+                            />
+                            <LabelValueCard
+                                label="Contact Number"
+                                value={voter?.phone}
+                            />
+                            <LabelValueCard
+                                label="Voter ID"
+                                value={voter?.voter_id_generated ?? ""}
+                            />
+                            <LabelValueCard
+                                label="Email"
+                                value={voter?.email}
+                            />
+                            <LabelValueCard
+                                label="Address"
+                                value={voter?.address}
+                            />
+                        </div>
                     </div>
 
-                    {/* Action Buttons */}
-                    {/* <div className="flex items-center justify-center mt-10">
-                        <Select placeholder="Select booth" />
-                    </div> */}
-                    <div className=" flex justify-center gap-5 ">
-                        <Button
-                            onClick={() => setSecretKeyShown((v) => !v)}
-                            radius={15}
-                            // disabled={!boothId}
-                        >
-                            {secretKeyShown
-                                ? voter.secret_key
-                                : "Show Secret Key"}
-                        </Button>
-                        <Button
-                            loading={sixDigitKeySendEmailMutation.isPending}
-                            disabled={
-                                ballotPrinted
-                                // || !boothId
-                            }
-                            onClick={sendSecretKey}
-                            leftSection={<AiOutlineSend size={16} />}
-                            radius={15}
-                        >
-                            Send Secrete Key
-                        </Button>
-                        <Button
-                            loading={sixDigitKeyPrintMutation.isPending}
-                            disabled={
-                                ballotPrinted
-                                // || !boothId
-                            }
-                            onClick={printSecretKey}
-                            leftSection={<AiOutlineKey size={16} />}
-                            radius={15}
-                        >
-                            Print Secrete Key
-                        </Button>
-                        <Button
-                            disabled={ballotPrinted}
-                            onClick={doBoth}
-                            leftSection={<AiOutlineKey size={16} />}
-                            radius={15}
-                        >
-                            Both
-                        </Button>
-                        <Button
-                            loading={sixDigitKeyPrintBallotMutation.isPending}
-                            disabled={ballotPrinted}
-                            onClick={printBallotPaper}
-                            leftSection={<AiOutlinePrinter size={16} />}
-                            radius={15}
-                            color="blue"
-                        >
-                            Print ballot Paper
-                        </Button>
+                    <div>
+                        {/* Action Buttons */}
+
+                        <div className=" flex gap-5 flex-wrap ">
+                            <Select
+                                disabled={voteStatus?.six_digit_key.status}
+                                placeholder="Select booth"
+                                data={boothList?.data?.data?.map((x) => ({
+                                    label: x.name,
+                                    value: x.id.toString(),
+                                }))}
+                                onChange={(e) => {
+                                    if (!e) return;
+                                    setBoothId(e);
+                                }}
+                                value={boothId}
+                                onClear={() => {
+                                    setBoothId("");
+                                }}
+                            />
+                            <Button
+                                onClick={handleShowSecureCode}
+                                radius={15}
+                                disabled={secretPrintOrSendDisabled}
+                                loading={sixDigitKeySendEmailMutation.isPending}
+                            >
+                                {secretKeyShown
+                                    ? voter.secret_key
+                                    : "Show Secret Key"}
+                            </Button>
+                            <Button
+                                loading={sixDigitKeySendEmailMutation.isPending}
+                                disabled={secretPrintOrSendDisabled}
+                                onClick={sendSecretKey}
+                                leftSection={<AiOutlineSend size={16} />}
+                                radius={15}
+                            >
+                                Send Secrete Key
+                            </Button>
+                            <Button
+                                loading={sixDigitKeyPrintMutation.isPending}
+                                disabled={secretPrintOrSendDisabled}
+                                onClick={printSecretKey}
+                                leftSection={<AiOutlineKey size={16} />}
+                                radius={15}
+                            >
+                                Print Secrete Key
+                            </Button>
+                            <Button
+                                disabled={secretPrintOrSendDisabled}
+                                onClick={doBoth}
+                                leftSection={<AiOutlineKey size={16} />}
+                                radius={15}
+                            >
+                                Both
+                            </Button>
+                            <Button
+                                loading={
+                                    sixDigitKeyPrintBallotMutation.isPending
+                                }
+                                disabled={
+                                    printBallotPaperDisabled ||
+                                    secretPrintOrSendDisabled
+                                }
+                                onClick={printBallotPaper}
+                                leftSection={<AiOutlinePrinter size={16} />}
+                                radius={15}
+                                color="blue"
+                            >
+                                Print ballot Paper
+                            </Button>
+                        </div>
                     </div>
                 </section>
             </div>
