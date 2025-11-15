@@ -10,7 +10,8 @@ import dayjs from "dayjs";
 import { useParams } from "next/navigation";
 
 export default function ManualVoteBallot() {
-    const { ballotNumber } = useParams<{ ballotNumber: string }>();
+    const params = useParams<{ ballotNumber: string }>();
+    const { ballotNumber } = useVoteStore();
     const { panelA, panelB } = useGetPanelWiseCandidates();
 
     /** PANEL SWAP LOGIC */
@@ -40,7 +41,8 @@ export default function ManualVoteBallot() {
                         Official Ballot Paper
                     </h1>
                     <p className="text-sm text-gray-700">
-                        Ballot Number: {ballotNumber || "—"}
+                        Ballot Number:{" "}
+                        {params?.ballotNumber ?? (ballotNumber || "—")}
                     </p>
                 </div>
 

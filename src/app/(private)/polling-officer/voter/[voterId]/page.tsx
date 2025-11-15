@@ -2,9 +2,9 @@
 import { useVoteStore } from "@/app/(private)/election/vote/vote.store";
 import ManualVoteBallot from "@/components/pages/manual-vote-ballot";
 import useAuth from "@/hooks/useAuth";
-import { useFullDeviceInfo } from "@/hooks/useFullDeviceInfo";
 import { getBucketURL } from "@/lib/helpers";
 import { useGetBoothList } from "@/services/api/booth.api";
+import { useDashboardListener } from "@/services/api/firebase.api";
 import { useSendSixDigitCodeMutation } from "@/services/api/poll-officer.api";
 import { useVoteStatus } from "@/services/api/vote.api";
 import { useVoterStore } from "@/store/voter-store";
@@ -32,7 +32,7 @@ export default function VoterDetails() {
         contentRef: printRef,
         documentTitle: "Ballot Paper",
     });
-    const { data: voteStatus, refetch } = useVoteStatus(voterId);
+    const { data: voteStatus, refetch, isLoading } = useVoteStatus(voterId);
 
     const [boothId, setBoothId] = useState<null | string>(null);
     const [secretKeyShown, setSecretKeyShown] = useState(false);
@@ -161,6 +161,8 @@ export default function VoterDetails() {
         !boothId ||
         printBallotPaperDisabled ||
         voteStatus?.six_digit_key.status;
+
+    if (isLoading) return null;
 
     if (!voter) return <div>Voter not found.</div>;
 

@@ -1,5 +1,7 @@
 "use client";
 import { useVoteStore } from "@/app/(private)/election/vote/vote.store";
+import { useFullDeviceInfo } from "@/hooks/useFullDeviceInfo";
+import useDeviceListener from "@/services/api/firebase.api";
 import { useValidateSixDigitKeyMutation } from "@/services/api/voter.api";
 import { Button, Image, PinInput } from "@mantine/core";
 import cookie from "js-cookie";
@@ -8,18 +10,21 @@ import { useEffect, useState } from "react";
 import { AiOutlineLock } from "react-icons/ai";
 
 export default function MemberAuth() {
+    const { device } = useFullDeviceInfo();
+    const { devices, globalDeviceLockStatus } = useDeviceListener();
+    const deviceInfo =
+        devices?.[device?.macAddress as keyof typeof devices] ?? null;
     const router = useRouter();
     const { mutateAsync: validateSixDigitCode } =
         useValidateSixDigitKeyMutation();
-    const [blocked, setBlocked] = useState(false);
     const [pin, setPin] = useState("");
-    const [retryCount, setRetryCount] = useState(0);
+    const blocked = globalDeviceLockStatus && !!deviceInfo?.lock_status;
 
     const handleContinue = async () => {
         try {
             const res = await validateSixDigitCode({
                 code: pin,
-                device_id: "123456",
+                device_id: "",
             });
 
             useVoteStore.setState({
@@ -31,12 +36,6 @@ export default function MemberAuth() {
             router.push("/election/vote");
         } catch {}
     };
-
-    useEffect(() => {
-        if (retryCount === 2) {
-            setBlocked(true);
-        }
-    }, [retryCount]);
 
     useEffect(() => {
         const timer = setTimeout(() => {
