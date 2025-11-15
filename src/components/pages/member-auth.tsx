@@ -18,7 +18,9 @@ export default function MemberAuth() {
     const { mutateAsync: validateSixDigitCode } =
         useValidateSixDigitKeyMutation();
     const [pin, setPin] = useState("");
-    const blocked = globalDeviceLockStatus && !!deviceInfo?.lock_status;
+    const blocked = Boolean(
+        globalDeviceLockStatus && !!deviceInfo?.lock_status
+    );
 
     const handleContinue = async () => {
         try {
