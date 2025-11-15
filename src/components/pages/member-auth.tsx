@@ -23,6 +23,7 @@ export default function MemberAuth() {
     );
 
     const handleContinue = async () => {
+        if (blocked) return;
         try {
             const res = await validateSixDigitCode({
                 code: pin,

@@ -1,26 +1,74 @@
 "use client";
 import { useFullDeviceInfo } from "@/hooks/useFullDeviceInfo";
-import { LoadingOverlay } from "@mantine/core";
+import { LoadingOverlay, Select } from "@mantine/core";
 import { notifications } from "@mantine/notifications";
-import React, { PropsWithChildren, useEffect } from "react";
+import React, { PropsWithChildren, useEffect, useState } from "react";
 import { MdWarning, MdPhoneIphone, MdDownload } from "react-icons/md";
 
 import { Alert, Button, Paper, Stack, Text, ThemeIcon } from "@mantine/core";
 import useDeviceListener from "@/services/api/firebase.api";
+import { useForm } from "@mantine/form";
+import { useGetBoothList } from "@/services/api/booth.api";
+import { modals } from "@mantine/modals";
+import axios from "axios";
+
+interface RegisterType {
+    booth_id: string;
+    ip_address: string;
+    mac_address: string;
+    device_type: string;
+    operating_system: string;
+    remarks: string;
+}
 
 export default function DeviceProvider(props: PropsWithChildren) {
     const { error, loading, device } = useFullDeviceInfo();
-    const { data } = useDeviceListener(device?.macAddress);
+    const { data, isLoading } = useDeviceListener(device?.macAddress);
 
-    if (loading) return <LoadingOverlay />;
+    if (loading || isLoading) return <LoadingOverlay />;
     if (error) return <CompanionSoftwareRequired />;
-    if (!data) return <DeviceNotRegistered />;
+    if (!data && !isLoading) return <DeviceNotRegistered />;
 
     return <> {props.children}</>;
 }
 
 // --- Page 1: Animated Device Not Registered ---
 export function DeviceNotRegistered() {
+    const [isLoading, setIsLoading] = useState(false);
+    const { data: boothList } = useGetBoothList({ per_page: 100, page: 1 });
+    const form = useForm({
+        initialValues: {
+            booth_id: "",
+            ip_address: "",
+            mac_address: "",
+            device_type: "",
+            operating_system: "",
+            remarks: "",
+        },
+        validate: {
+            booth_id: (_value) => !_value && "Booth is required",
+        },
+    });
+
+    const handleRegisterDevice = async (values: typeof form.values) => {
+        setIsLoading(true);
+        const baseURL = process.env.NEXT_PUBLIC_ADMIN_API_URL;
+        await axios
+            .post(`${baseURL}/v1/device/register-with-mac`, values)
+            .then(() => {
+                notifications.show({ message: "Device registered" });
+            })
+            .catch((err) => {
+                notifications.show({
+                    color: "red",
+                    message: "Device registration failed",
+                });
+            })
+            .finally(() => {
+                setIsLoading(false);
+            });
+    };
+
     return (
         <div className="flex h-screen w-full flex-col items-center justify-center bg-gradient-to-br from-gray-900 via-gray-800 to-black text-white p-6 relative overflow-hidden">
             {/* Floating glowing background animation */}
@@ -50,19 +98,35 @@ export function DeviceNotRegistered() {
                     >
                         <p className=" text-sm text-white">
                             This device is not registered in the system. Please
-                            contact your administrator.
+                            select a booth and register.
                         </p>
                     </Alert>
 
-                    <Button
-                        fullWidth
-                        size="md"
-                        radius="md"
-                        className="bg-red-600 hover:bg-red-700 text-white shadow-lg transition-all hover:scale-105"
-                        onClick={() => window.location.reload()}
+                    <form
+                        className=" w-full space-y-3 "
+                        onSubmit={form.onSubmit(handleRegisterDevice)}
                     >
-                        Register
-                    </Button>
+                        <Select
+                            label="Select Booth"
+                            data={boothList?.data?.data?.map((x) => ({
+                                label: x.name,
+                                value: x.id.toString(),
+                            }))}
+                            placeholder="Select a booth"
+                            {...form.getInputProps("booth_id")}
+                        />
+                        <Button
+                            type="submit"
+                            disabled={!form.values.booth_id || isLoading}
+                            loading={isLoading}
+                            fullWidth
+                            size="md"
+                            radius="md"
+                            className="bg-red-600 hover:bg-red-700 text-white shadow-lg transition-all hover:scale-105"
+                        >
+                            Register
+                        </Button>
+                    </form>
 
                     <a
                         href="/companion-required"
