@@ -1,7 +1,6 @@
 "use client";
 
 import MemberAuth from "@/components/pages/member-auth";
-import useDashboardListener from "@/services/api/firebase.api";
 
 export default function RootPage() {
     return (

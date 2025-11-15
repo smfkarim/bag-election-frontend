@@ -23,17 +23,22 @@ interface RegisterType {
 
 export default function DeviceProvider(props: PropsWithChildren) {
     const { error, loading, device } = useFullDeviceInfo();
-    const { data, isLoading } = useDeviceListener(device?.macAddress);
+    const { isLoading, devices } = useDeviceListener();
+
+    const deviceInfo =
+        devices?.[device?.macAddress as keyof typeof devices] ?? null;
 
     if (loading || isLoading) return <LoadingOverlay />;
     if (error) return <CompanionSoftwareRequired />;
-    if (!data && !isLoading) return <DeviceNotRegistered />;
+    if (!deviceInfo) return <DeviceNotRegistered />;
 
     return <> {props.children}</>;
 }
 
 // --- Page 1: Animated Device Not Registered ---
 export function DeviceNotRegistered() {
+    const { error, device } = useFullDeviceInfo();
+
     const [isLoading, setIsLoading] = useState(false);
     const { data: boothList } = useGetBoothList({ per_page: 100, page: 1 });
     const form = useForm({
@@ -49,6 +54,18 @@ export function DeviceNotRegistered() {
             booth_id: (_value) => !_value && "Booth is required",
         },
     });
+
+    useEffect(() => {
+        if (device) {
+            form.setValues({
+                ip_address: device.ipAddress,
+                mac_address: device.macAddress,
+                device_type: device.deviceType,
+                operating_system: device.operatingSystem,
+                remarks: JSON.stringify(device),
+            });
+        }
+    }, [device]);
 
     const handleRegisterDevice = async (values: typeof form.values) => {
         setIsLoading(true);

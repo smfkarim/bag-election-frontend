@@ -1,7 +1,7 @@
 import { DashboardJSON, DeviceJSON } from "@/@types/firebase";
 import { useFullDeviceInfo } from "@/hooks/useFullDeviceInfo";
 import { autoLogin, db, dbPath } from "@/lib/firebase";
-import { onValue, ref } from "firebase/database";
+import { onValue, ref, set } from "firebase/database";
 import { useEffect, useState } from "react";
 
 export function useDashboardListener() {
@@ -32,7 +32,7 @@ export function useDashboardListener() {
     };
 }
 
-export default function useDeviceListener(deviceMAC?: string) {
+export default function useDeviceListener() {
     const [devices, setDevices] = useState<Record<string, DeviceJSON> | null>(
         null
     );
@@ -59,12 +59,50 @@ export default function useDeviceListener(deviceMAC?: string) {
                 }
             );
         });
-    }, [deviceMAC]);
+    }, []);
 
     return {
         isLoading,
-        data: deviceMAC && devices ? (devices[deviceMAC] as DeviceJSON) : null,
         devices,
         globalDeviceLockStatus,
     };
 }
+
+export const toggleDeviceLockStatus = async (
+    deviceMAC: string,
+    lockStatus: boolean
+) => {
+    try {
+        await autoLogin();
+        const deviceRef = ref(db, dbPath(`devices/${deviceMAC}/lock_status`));
+        await set(deviceRef, lockStatus);
+    } catch (error) {
+        console.error("Error toggling device lock status:", error);
+        throw error;
+    }
+};
+
+// export const setGlobalLockStatus = async (lockStatus: boolean) => {
+//     try {
+//         await autoLogin();
+//         const globalLockRef = ref(db, dbPath(`global_device_lock_setting`));
+//         await set(globalLockRef, lockStatus);
+//     } catch (error) {
+//         console.error("Error setting global lock status:", error);
+//         throw error;
+//     }
+// };
+
+export const setWrongAttempts = async (deviceMAC: string, attempts: number) => {
+    try {
+        await autoLogin();
+        const deviceRef = ref(
+            db,
+            dbPath(`devices/${deviceMAC}/wrong_attempts`)
+        );
+        await set(deviceRef, attempts);
+    } catch (error) {
+        console.error("Error setting wrong attempts:", error);
+        throw error;
+    }
+};

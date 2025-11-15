@@ -104,6 +104,7 @@ export default function VoterDetails() {
             ...info,
         });
         setSecretKeyShown((v) => !v);
+        refetch();
     };
 
     const printBallotPaper = async () => {

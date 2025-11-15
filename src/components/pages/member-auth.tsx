@@ -1,7 +1,10 @@
 "use client";
 import { useVoteStore } from "@/app/(private)/election/vote/vote.store";
 import { useFullDeviceInfo } from "@/hooks/useFullDeviceInfo";
-import useDeviceListener from "@/services/api/firebase.api";
+import useDeviceListener, {
+    setWrongAttempts,
+    toggleDeviceLockStatus,
+} from "@/services/api/firebase.api";
 import { useValidateSixDigitKeyMutation } from "@/services/api/voter.api";
 import { Button, Image, PinInput } from "@mantine/core";
 import cookie from "js-cookie";
@@ -23,11 +26,11 @@ export default function MemberAuth() {
     );
 
     const handleContinue = async () => {
-        if (blocked) return;
+        if (blocked || !deviceInfo) return;
         try {
             const res = await validateSixDigitCode({
                 code: pin,
-                device_id: "",
+                device_id: deviceInfo?.mac_address,
             });
 
             useVoteStore.setState({
@@ -37,8 +40,20 @@ export default function MemberAuth() {
 
             cookie.set("isVoter", "1");
             router.push("/election/vote");
-        } catch {}
+            await setWrongAttempts(deviceInfo.mac_address, 0);
+        } catch {
+            await setWrongAttempts(
+                deviceInfo?.mac_address,
+                Number(deviceInfo?.wrong_attempts ?? 0) + 1
+            );
+        }
     };
+
+    useEffect(() => {
+        if (!!deviceInfo && deviceInfo?.wrong_attempts >= 3) {
+            toggleDeviceLockStatus(deviceInfo.mac_address, true);
+        }
+    }, [deviceInfo?.wrong_attempts]);
 
     useEffect(() => {
         const timer = setTimeout(() => {

@@ -36,6 +36,7 @@ export interface DeviceJSON {
     remarks: string;
     status: string;
     updated_at: string;
+    wrong_attempts: number;
 }
 
 interface Booth {
