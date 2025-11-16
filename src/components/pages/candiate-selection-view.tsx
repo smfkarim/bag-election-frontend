@@ -2,7 +2,9 @@
 
 import { SortedCandidate } from "@/@types/candidate";
 import { useVoteStore } from "@/app/(private)/election/vote/vote.store";
+import { PANEL_A_TITLE, PANEL_B_TITLE } from "@/constants";
 import { getBucketURL } from "@/lib/helpers";
+import { printPage } from "@/lib/printer";
 import { useGetPanelWiseCandidates } from "@/services/api/candidate.api";
 import { useGiveBulkVoteMutation } from "@/services/api/voter.api";
 import { Button, Image, Skeleton } from "@mantine/core";
@@ -13,7 +15,6 @@ import { useRef, useState } from "react";
 import { AiOutlineCheck } from "react-icons/ai";
 import { useReactToPrint } from "react-to-print";
 import CandidateSelectionPrint from "./candiate-selection-print";
-import { PANEL_A_TITLE, PANEL_B_TITLE } from "@/constants";
 
 export type TCandidate = {
     id: number;
@@ -85,7 +86,10 @@ export default function CandidateSelectionView() {
                                         election_id: "1",
                                         voter_id,
                                     });
-                                    reactToPrintFn();
+                                    // reactToPrintFn();
+                                    await printPage(
+                                        "/print/digital-vote/" + ballotNumber
+                                    );
                                     modals.closeAll();
                                     setTimeout(() => router.replace("/"), 1000);
                                 } catch (error) {

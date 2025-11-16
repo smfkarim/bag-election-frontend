@@ -2,9 +2,10 @@
 import { useVoteStore } from "@/app/(private)/election/vote/vote.store";
 import ManualVoteBallot from "@/components/pages/manual-vote-ballot";
 import useAuth from "@/hooks/useAuth";
+import { useFullDeviceInfo } from "@/hooks/useFullDeviceInfo";
 import { getBucketURL } from "@/lib/helpers";
+import { printPage } from "@/lib/printer";
 import { useGetBoothList } from "@/services/api/booth.api";
-import { useDashboardListener } from "@/services/api/firebase.api";
 import { useSendSixDigitCodeMutation } from "@/services/api/poll-officer.api";
 import { useVoteStatus } from "@/services/api/vote.api";
 import { useVoterStore } from "@/store/voter-store";
@@ -23,6 +24,7 @@ export default function VoterDetails() {
     const sixDigitKeyPrintMutation = useSendSixDigitCodeMutation();
     const sixDigitKeyPrintBallotMutation = useSendSixDigitCodeMutation();
     const doBothMutation = useSendSixDigitCodeMutation();
+    const { device } = useFullDeviceInfo();
     const { voter } = useVoterStore();
     const { userId } = useAuth();
     const { voterId } = useParams<{ voterId: string }>();
@@ -42,7 +44,7 @@ export default function VoterDetails() {
     });
     const info = {
         booth_id: boothId,
-        device_info: "PL:XN:53:WQ:6I:VR",
+        device_info: device?.macAddress ?? "",
         user_id: userId ?? "",
         uuid: voterId,
     };
@@ -136,7 +138,13 @@ export default function VoterDetails() {
                                             ...info,
                                         }
                                     );
-                                    reactToPrintFn();
+                                    await printPage(
+                                        "/print/manual-vote/" +
+                                            voteStatus?.eight_digit_key
+                                                .secret_key
+                                    );
+
+                                    // reactToPrintFn();
                                 } finally {
                                     notifications.show({
                                         title: "Success",
@@ -194,13 +202,25 @@ export default function VoterDetails() {
 
                 <section className=" bg-gray-100 p-10  rounded-2xl space-y-10">
                     {/* Back */}
-                    <div
-                        onClick={() => {
-                            router.back();
-                        }}
-                        className="flex items-center gap-3 bg-gray-200 w-fit ml-auto px-5 py-3 rounded-2xl hover:opacity-80 hover:cursor-pointer"
-                    >
-                        <MdArrowBackIosNew /> Back To Search
+                    <div className="flex items-center justify-between">
+                        {!boothId
+                            ? null
+                            : (secretPrintOrSendDisabled ||
+                                  printBallotPaperDisabled) && (
+                                  <h1 className=" text-red-400 text-2xl">
+                                      {secretPrintOrSendDisabled
+                                          ? "Secret already generated"
+                                          : "Manual ballot already printed"}
+                                  </h1>
+                              )}
+                        <div
+                            onClick={() => {
+                                router.back();
+                            }}
+                            className="flex items-center gap-3 bg-gray-200 w-fit ml-auto px-5 py-3 rounded-2xl hover:opacity-80 hover:cursor-pointer"
+                        >
+                            <MdArrowBackIosNew /> Back To Search
+                        </div>
                     </div>
 
                     <div className="flex flex-col sm:flex-row gap-5">
