@@ -139,7 +139,7 @@ export default function VoterDetails() {
                                         }
                                     );
                                     await printPage(
-                                        "/polling-officer/manual-vote/" +
+                                        "/print/manual-vote/" +
                                             voteStatus?.eight_digit_key
                                                 .secret_key
                                     );

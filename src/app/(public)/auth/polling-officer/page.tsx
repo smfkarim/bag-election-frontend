@@ -52,7 +52,7 @@ export default function PollingAgentLogin() {
 
     useEffect(() => {
         if (isAuthenticated && role === "Poll Officer") {
-            router.push("/polling-officer/voter");
+            router.push("/polling-officer");
         }
     }, []);
 

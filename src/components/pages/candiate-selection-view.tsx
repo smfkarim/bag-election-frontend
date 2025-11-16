@@ -88,7 +88,7 @@ export default function CandidateSelectionView() {
                                     });
                                     // reactToPrintFn();
                                     await printPage(
-                                        "/election/vote/summary/" + ballotNumber
+                                        "/print/digital-vote/" + ballotNumber
                                     );
                                     modals.closeAll();
                                     setTimeout(() => router.replace("/"), 1000);
