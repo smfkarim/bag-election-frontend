@@ -1,5 +1,10 @@
 "use client";
 import { useVoteStore } from "@/app/(private)/election/vote/vote.store";
+import { useFullDeviceInfo } from "@/hooks/useFullDeviceInfo";
+import useDeviceListener, {
+    setWrongAttempts,
+    toggleDeviceLockStatus,
+} from "@/services/api/firebase.api";
 import { useValidateSixDigitKeyMutation } from "@/services/api/voter.api";
 import { Button, Image, PinInput } from "@mantine/core";
 import cookie from "js-cookie";
@@ -8,18 +13,24 @@ import { useEffect, useState } from "react";
 import { AiOutlineLock } from "react-icons/ai";
 
 export default function MemberAuth() {
+    const { device } = useFullDeviceInfo();
+    const { devices, globalDeviceLockStatus } = useDeviceListener();
+    const deviceInfo =
+        devices?.[device?.macAddress as keyof typeof devices] ?? null;
     const router = useRouter();
     const { mutateAsync: validateSixDigitCode } =
         useValidateSixDigitKeyMutation();
-    const [blocked, setBlocked] = useState(false);
     const [pin, setPin] = useState("");
-    const [retryCount, setRetryCount] = useState(0);
+    const blocked = Boolean(
+        globalDeviceLockStatus && !!deviceInfo?.lock_status
+    );
 
     const handleContinue = async () => {
+        if (blocked || !deviceInfo) return;
         try {
             const res = await validateSixDigitCode({
                 code: pin,
-                device_id: "123456",
+                device_id: deviceInfo?.mac_address,
             });
 
             useVoteStore.setState({
@@ -29,14 +40,20 @@ export default function MemberAuth() {
 
             cookie.set("isVoter", "1");
             router.push("/election/vote");
-        } catch {}
+            await setWrongAttempts(deviceInfo.mac_address, 0);
+        } catch {
+            await setWrongAttempts(
+                deviceInfo?.mac_address,
+                Number(deviceInfo?.wrong_attempts ?? 0) + 1
+            );
+        }
     };
 
     useEffect(() => {
-        if (retryCount === 2) {
-            setBlocked(true);
+        if (!!deviceInfo && deviceInfo?.wrong_attempts >= 3) {
+            toggleDeviceLockStatus(deviceInfo.mac_address, true);
         }
-    }, [retryCount]);
+    }, [deviceInfo?.wrong_attempts]);
 
     useEffect(() => {
         const timer = setTimeout(() => {

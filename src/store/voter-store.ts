@@ -13,6 +13,7 @@ export const useVoterStore = create<VoterStore>()(
             voter: null,
         }),
         {
+            skipHydration: false,
             name: "auth",
             storage: createJSONStorage(() => secureStorage),
         }

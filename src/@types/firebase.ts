@@ -23,8 +23,37 @@ interface Devices {
 }
 
 export interface DeviceJSON {
-    locked_at: string;
-    locked_until: string;
-    reason: string;
-    status: "locked" | "unlocked";
+    booths: Booth[];
+    code: string;
+    created_at: string;
+    device_type: string;
+    hostname: string;
+    id: number;
+    ip_address: string;
+    lock_status: boolean;
+    mac_address: string;
+    operating_system: string;
+    remarks: string;
+    status: string;
+    updated_at: string;
+    wrong_attempts: number;
+}
+
+interface Booth {
+    code: string;
+    created_at: string;
+    created_by: number;
+    id: number;
+    location: string;
+    name: string;
+    pivot: Pivot;
+    updated_at: string;
+}
+
+interface Pivot {
+    booth_id: number;
+    created_at: string;
+    device_id: number;
+    updated_at: string;
+    uuid: string;
 }

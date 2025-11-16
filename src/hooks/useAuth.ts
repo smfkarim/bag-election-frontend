@@ -4,7 +4,7 @@ import { useSession } from "next-auth/react";
 import { useEffect } from "react";
 
 export default function useAuth() {
-    const { status, update, data } = useSession();
+    const { status, data } = useSession();
     const role = data?.user.role;
     const permissions = data?.user?.permissions;
     const isAuthenticated = status === "authenticated";

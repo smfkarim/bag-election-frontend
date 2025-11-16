@@ -23,6 +23,8 @@ const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
 
 export const db = getDatabase(app);
 export const auth = getAuth(app);
+export const dbPath = (path: string) =>
+    `${process.env.NEXT_PUBLIC_REALTIME_DB_ROOT}/${path}`;
 
 //
 export async function autoLogin() {

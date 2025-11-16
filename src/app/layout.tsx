@@ -15,6 +15,7 @@ import {
 } from "@mantine/core";
 import { ModalsProvider } from "@mantine/modals";
 import { Notifications } from "@mantine/notifications";
+import DeviceProvider from "@/components/layout/device-provider";
 
 const geistSans = Geist({
     variable: "--font-geist-sans",
@@ -48,7 +49,9 @@ export default function RootLayout({
                     <MantineProvider theme={theme} forceColorScheme="light">
                         <Notifications position="top-center" />
                         <ModalsProvider>
-                            <QueryProvider>{children}</QueryProvider>
+                            <QueryProvider>
+                                <DeviceProvider>{children}</DeviceProvider>
+                            </QueryProvider>
                         </ModalsProvider>
                     </MantineProvider>
                 </SessionProvider>
