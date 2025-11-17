@@ -15,6 +15,7 @@ import { useRef, useState } from "react";
 import { AiOutlineCheck } from "react-icons/ai";
 import { useReactToPrint } from "react-to-print";
 import CandidateSelectionPrint from "./candiate-selection-print";
+import { wait } from "@/utils/helper";
 
 export type TCandidate = {
     id: number;
@@ -48,60 +49,67 @@ export default function CandidateSelectionView() {
     let third = "others";
     let fourth = "Executive Secretary";
 
+    const VoteSubmitConfirmation = () => {
+        const [loading, setLoading] = useState(false);
+        return (
+            <div className="flex flex-col items-center space-y-3">
+                <p className="text-center p-5">
+                    Are you sure to confirm the vote and print the Ballot Paper?
+                </p>
+
+                <div className="flex items-center gap-5">
+                    <Button
+                        variant="outline"
+                        color="red"
+                        onClick={() => {
+                            modals.closeAll();
+                        }}
+                    >
+                        Cancel
+                    </Button>
+                    <Button
+                        disabled={giveVoteMutation.isPending || loading}
+                        // loading={giveVoteMutation.isPending || loading}
+                        onClick={async (e) => {
+                            e.preventDefault();
+                            try {
+                                setLoading(true);
+                                const ids = selectedCandidates?.map(
+                                    (x) => x.uuid
+                                );
+                                await giveVoteMutation.mutateAsync({
+                                    candidate_ids: ids,
+                                    device_id: "windows",
+                                    election_id: "1",
+                                    voter_id,
+                                });
+                                // reactToPrintFn();
+                                await printPage(
+                                    "/print/digital-vote/" + ballotNumber
+                                );
+                                await wait(6 * 1000);
+                                modals.closeAll();
+                                setTimeout(() => router.replace("/"), 1000);
+                            } catch (error) {
+                                console.error(error);
+                            } finally {
+                                setLoading(false);
+                            }
+                        }}
+                    >
+                        {loading ? "Submitting and Printing..." : "Confirm"}
+                    </Button>
+                </div>
+            </div>
+        );
+    };
     const handleSubmitVote = async () => {
         modals.open({
             closeOnClickOutside: false,
             withCloseButton: false,
             centered: true,
             size: "300px",
-            children: (
-                <div className="flex flex-col items-center space-y-3">
-                    <p className="text-center p-5">
-                        Are you sure to confirm the vote and print the Ballot
-                        Paper?
-                    </p>
-
-                    <div className="flex items-center gap-5">
-                        <Button
-                            variant="outline"
-                            color="red"
-                            onClick={() => {
-                                modals.closeAll();
-                            }}
-                        >
-                            Cancel
-                        </Button>
-                        <Button
-                            disabled={giveVoteMutation.isPending}
-                            loading={giveVoteMutation.isPending}
-                            onClick={async (e) => {
-                                e.preventDefault();
-                                try {
-                                    const ids = selectedCandidates?.map(
-                                        (x) => x.uuid
-                                    );
-                                    await giveVoteMutation.mutateAsync({
-                                        candidate_ids: ids,
-                                        device_id: "windows",
-                                        election_id: "1",
-                                        voter_id,
-                                    });
-                                    // reactToPrintFn();
-                                    await printPage(
-                                        "/print/digital-vote/" + ballotNumber
-                                    );
-                                    modals.closeAll();
-                                    setTimeout(() => router.replace("/"), 1000);
-                                } catch (error) {
-                                    console.error(error);
-                                }
-                            }}
-                        >
-                            Confirm
-                        </Button>
-                    </div>
-                </div>
-            ),
+            children: <VoteSubmitConfirmation />,
         });
     };
 
