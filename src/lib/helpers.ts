@@ -16,4 +16,4 @@ export const parseErrorMessage = (
 };
 
 export const getBucketURL = (path: string) =>
-    `${process.env.NEXT_PUBLIC_BUCKET_URL}${path}`;
+    `${process.env.NEXT_PUBLIC_BUCKET_URL}/${path}`;
