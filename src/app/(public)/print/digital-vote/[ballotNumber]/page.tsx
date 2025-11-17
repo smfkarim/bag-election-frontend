@@ -1,5 +1,5 @@
 "use client";
-import CandidateSelectionPrint from "@/components/pages/candiate-selection-print";
+import VoteSummary from "@/components/pages/vote-summary";
 export default function Page() {
-    return <CandidateSelectionPrint />;
+    return <VoteSummary />;
 }
