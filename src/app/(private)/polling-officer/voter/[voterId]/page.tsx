@@ -115,7 +115,7 @@ export default function VoterDetails() {
 
     const handleShowSecureCode = async () => {
         await sixDigitKeySendEmailMutation.mutateAsync({
-            type: "show_secret",
+            type: "print",
             ...info,
         });
         setSecretKeyShown((v) => !v);
