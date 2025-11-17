@@ -5,8 +5,8 @@ import { useVoteStore } from "@/app/(private)/election/vote/vote.store";
 import { PANEL_A_TITLE, PANEL_B_TITLE } from "@/constants";
 import { getBucketURL } from "@/lib/helpers";
 import { useGetPanelWiseCandidates } from "@/services/api/candidate.api";
-import { Image } from "@mantine/core";
 import dayjs from "dayjs";
+import Image from "next/image";
 import { useParams } from "next/navigation";
 
 export default function ManualVoteBallot() {
@@ -33,7 +33,12 @@ export default function ManualVoteBallot() {
             {/* HEADER */}
             <header className="flex items-center justify-between border-b pb-3 mb-4 shrink-0">
                 <div className="w-20">
-                    <Image src="/bag_logo.png" alt="bag_logo" />
+                    <Image
+                        src="/bag_logo.png"
+                        alt="bag_logo"
+                        height={40}
+                        width={40}
+                    />
                 </div>
 
                 <div className="flex-1 text-center">
@@ -74,7 +79,7 @@ export default function ManualVoteBallot() {
 
                 {/* VICE PRESIDENTS */}
                 <div>
-                    <h1 className="text-base font-semibold text-center mt-2">
+                    <h1 className="text-base font-semibold text-center">
                         Vote two from the following four
                     </h1>
 
@@ -214,26 +219,31 @@ const PanelTable = ({
             ) : null}
 
             <table className="w-full text-sm flex-1 justify-start">
-                <thead className="border-b">
-                    <tr>
-                        <th className="p-1 w-6">#</th>
-                        <th className="p-1 w-10 text-left">Photo</th>
-                        <th className="p-1 text-left">Candidate</th>
-                        <th className="p-1 text-left">Type</th>
-                        <th className="p-1 w-6 text-center">✓</th>
-                    </tr>
-                </thead>
+                {title && (
+                    <thead className="border-b">
+                        <tr>
+                            {/* <th className="p-1 w-6">#</th> */}
+                            <th className="p-1 w-10 text-left">Photo</th>
+                            <th className="p-1 text-left">Candidate</th>
+                            <th className="p-1 text-left">Type</th>
+                            <th className="p-1 w-6 text-center">✓</th>
+                        </tr>
+                    </thead>
+                )}
 
                 <tbody>
                     {candidates.map((c, i) => (
                         <tr key={i} className="border-b last:border-none h-10">
-                            <td className="p-1">{i + 1}</td>
+                            {/* <td className="p-1">{i + 1}</td> */}
 
                             <td>
                                 <div className="size-10 my-1 mx-auto">
                                     <Image
+                                        height={40}
+                                        width={40}
                                         className="object-contain object-top h-full w-full"
                                         src={getBucketURL(c.photo_url)}
+                                        alt={c?.name}
                                     />
                                 </div>
                             </td>

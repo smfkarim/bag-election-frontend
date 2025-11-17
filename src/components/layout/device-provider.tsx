@@ -11,6 +11,7 @@ import { useForm } from "@mantine/form";
 import { useGetBoothList } from "@/services/api/booth.api";
 import { modals } from "@mantine/modals";
 import axios from "axios";
+import { usePathname } from "next/navigation";
 
 interface RegisterType {
     booth_id: string;
@@ -22,15 +23,19 @@ interface RegisterType {
 }
 
 export default function DeviceProvider(props: PropsWithChildren) {
+    const pathname = usePathname();
     const { error, loading, device } = useFullDeviceInfo();
     const { isLoading, devices } = useDeviceListener();
+
+    const isDeviceRequiredRoute =
+        pathname === "/" || pathname.includes("/election/vote");
 
     const deviceInfo =
         devices?.[device?.macAddress as keyof typeof devices] ?? null;
 
     if (loading || isLoading) return <LoadingOverlay />;
     if (error) return <CompanionSoftwareRequired />;
-    if (!deviceInfo) return <DeviceNotRegistered />;
+    if (!deviceInfo && isDeviceRequiredRoute) return <DeviceNotRegistered />;
 
     return <> {props.children}</>;
 }
@@ -41,7 +46,7 @@ export function DeviceNotRegistered() {
 
     const [isLoading, setIsLoading] = useState(false);
     const { data: boothList } = useGetBoothList({ per_page: 100, page: 1 });
-    const form = useForm({
+    const form = useForm<RegisterType>({
         initialValues: {
             booth_id: "",
             ip_address: "",
