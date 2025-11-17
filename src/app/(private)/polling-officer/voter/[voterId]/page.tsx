@@ -145,19 +145,17 @@ export default function VoterDetails() {
                         onClick={async () => {
                             setLoading(true);
                             try {
-                                await wait(2 * 1000);
-                                // await sixDigitKeyPrintBallotMutation.mutateAsync(
-                                //     {
-                                //         type: "ballot",
-                                //         ...info,
-                                //     }
-                                // );
-                                // await printPage(
-                                //     "/print/manual-vote/" +
-                                //         voteStatus?.eight_digit_key
-                                //             .secret_key
-                                // );
-                                // await wait(6 * 1000);
+                                await sixDigitKeyPrintBallotMutation.mutateAsync(
+                                    {
+                                        type: "ballot",
+                                        ...info,
+                                    }
+                                );
+                                await printPage(
+                                    "/print/manual-vote/" +
+                                        voteStatus?.eight_digit_key.secret_key
+                                );
+                                await wait(6 * 1000);
                                 // reactToPrintFn();
                             } finally {
                                 setLoading(false);
