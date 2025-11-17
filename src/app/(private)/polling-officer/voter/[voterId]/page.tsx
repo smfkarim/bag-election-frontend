@@ -9,6 +9,7 @@ import { useGetBoothList } from "@/services/api/booth.api";
 import { useSendSixDigitCodeMutation } from "@/services/api/poll-officer.api";
 import { useVoteStatus } from "@/services/api/vote.api";
 import { useVoterStore } from "@/store/voter-store";
+import { wait } from "@/utils/helper";
 import { Button, Image, Select } from "@mantine/core";
 import { modals } from "@mantine/modals";
 import { notifications } from "@mantine/notifications";
@@ -35,9 +36,9 @@ export default function VoterDetails() {
         documentTitle: "Ballot Paper",
     });
     const { data: voteStatus, refetch, isLoading } = useVoteStatus(voterId);
-
     const [boothId, setBoothId] = useState<null | string>(null);
     const [secretKeyShown, setSecretKeyShown] = useState(false);
+    const [loading, setLoading] = useState(false);
     const { data: boothList } = useGetBoothList({
         per_page: 100,
         page: 1,
@@ -110,58 +111,71 @@ export default function VoterDetails() {
     };
 
     const printBallotPaper = async () => {
+        setLoading(true);
         modals.open({
             closeOnClickOutside: false,
             centered: true,
             withCloseButton: false,
             size: "350",
-            children: (
-                <div>
-                    <h1 className=" text-center">
-                        Are you sure to Print your ballot paper ?
-                    </h1>
-                    <div className=" flex justify-center items-center gap-5 mt-5">
-                        <Button
-                            onClick={() => {
-                                modals.closeAll();
-                            }}
-                            variant="outline"
-                        >
-                            Cancel
-                        </Button>
-                        <Button
-                            onClick={async () => {
-                                try {
-                                    await sixDigitKeyPrintBallotMutation.mutateAsync(
-                                        {
-                                            type: "ballot",
-                                            ...info,
-                                        }
-                                    );
-                                    await printPage(
-                                        "/print/manual-vote/" +
-                                            voteStatus?.eight_digit_key
-                                                .secret_key
-                                    );
-
-                                    // reactToPrintFn();
-                                } finally {
-                                    notifications.show({
-                                        title: "Success",
-                                        message:
-                                            "Ballot paper printed successfully",
-                                    });
-                                    modals.closeAll();
-                                    refetch();
-                                }
-                            }}
-                        >
-                            Print Ballot Paper
-                        </Button>
-                    </div>
-                </div>
-            ),
+            children: <PrintBallotConfirmation />,
         });
+    };
+
+    const PrintBallotConfirmation = () => {
+        const [loading, setLoading] = useState(false);
+        return (
+            <div>
+                <h1 className=" text-center">
+                    {loading
+                        ? "Your ballot paper is printing."
+                        : " Are you sure to Print your ballot paper ?"}
+                </h1>
+                <div className=" flex justify-center items-center gap-5 mt-5">
+                    <Button
+                        onClick={() => {
+                            modals.closeAll();
+                            setLoading(false);
+                        }}
+                        variant="outline"
+                    >
+                        Cancel
+                    </Button>
+                    <Button
+                        loading={loading}
+                        onClick={async () => {
+                            setLoading(true);
+                            try {
+                                await wait(2 * 1000);
+                                // await sixDigitKeyPrintBallotMutation.mutateAsync(
+                                //     {
+                                //         type: "ballot",
+                                //         ...info,
+                                //     }
+                                // );
+                                // await printPage(
+                                //     "/print/manual-vote/" +
+                                //         voteStatus?.eight_digit_key
+                                //             .secret_key
+                                // );
+                                // await wait(6 * 1000);
+                                // reactToPrintFn();
+                            } finally {
+                                setLoading(false);
+                                notifications.show({
+                                    title: "Success",
+                                    message:
+                                        "Ballot paper printed successfully",
+                                });
+                                modals.closeAll();
+                                refetch();
+                            }
+                        }}
+                    >
+                        {loading ? "Printing..." : " Print Ballot Paper"}
+                    </Button>
+                </div>
+            </div>
+        );
     };
 
     const printBallotPaperDisabled =

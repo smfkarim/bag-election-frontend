@@ -121,13 +121,13 @@ export default function Page() {
                             />
 
                             <Button
-                                loading={isLoading}
+                                disabled={isLoading}
                                 fullWidth
                                 type="submit"
                                 rightSection={<FiSearch size={16} />}
                                 mt={20}
                             >
-                                Search
+                                {isLoading ? "Searching..." : "Search"}
                             </Button>
                         </div>
                     </form>
