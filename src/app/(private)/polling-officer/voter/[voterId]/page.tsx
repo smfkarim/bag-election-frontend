@@ -72,8 +72,19 @@ export default function VoterDetails() {
         }
     };
 
+    const [secretPrintLoading, setSecretPrintLoading] = useState(false);
     const printSecretKey = async () => {
         try {
+            setSecretPrintLoading(true);
+            await printPage(
+                `/print/secret?name=${
+                    voter?.first_name +
+                    " " +
+                    voter?.last_name +
+                    " " +
+                    voter?.last_name
+                }&secret=${voteStatus?.six_digit_key.secret_key}`
+            );
             await sixDigitKeyPrintMutation.mutateAsync({
                 type: "print",
                 ...info,
@@ -84,6 +95,7 @@ export default function VoterDetails() {
             });
         } finally {
             refetch();
+            setSecretPrintLoading(false);
         }
     };
 
@@ -111,7 +123,6 @@ export default function VoterDetails() {
     };
 
     const printBallotPaper = async () => {
-        setLoading(true);
         modals.open({
             closeOnClickOutside: false,
             centered: true,
@@ -132,6 +143,7 @@ export default function VoterDetails() {
                 </h1>
                 <div className=" flex justify-center items-center gap-5 mt-5">
                     <Button
+                        disabled={isLoading}
                         onClick={() => {
                             modals.closeAll();
                             setLoading(false);
@@ -142,6 +154,7 @@ export default function VoterDetails() {
                     </Button>
                     <Button
                         loading={loading}
+                        disabled={isLoading}
                         onClick={async () => {
                             setLoading(true);
                             try {
@@ -155,7 +168,7 @@ export default function VoterDetails() {
                                     "/print/manual-vote/" +
                                         voteStatus?.eight_digit_key.secret_key
                                 );
-                                await wait(6 * 1000);
+                                await wait(2 * 1000);
                                 // reactToPrintFn();
                             } finally {
                                 setLoading(false);
@@ -320,8 +333,11 @@ export default function VoterDetails() {
                                 Send Secrete Key
                             </Button>
                             <Button
-                                loading={sixDigitKeyPrintMutation.isPending}
-                                disabled={secretPrintOrSendDisabled}
+                                loading={secretPrintLoading}
+                                disabled={
+                                    secretPrintOrSendDisabled ||
+                                    secretPrintLoading
+                                }
                                 onClick={printSecretKey}
                                 leftSection={<AiOutlineKey size={16} />}
                                 radius={15}

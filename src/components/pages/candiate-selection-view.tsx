@@ -59,6 +59,7 @@ export default function CandidateSelectionView() {
 
                 <div className="flex items-center gap-5">
                     <Button
+                        disabled={giveVoteMutation.isPending || loading}
                         variant="outline"
                         color="red"
                         onClick={() => {
@@ -69,7 +70,7 @@ export default function CandidateSelectionView() {
                     </Button>
                     <Button
                         disabled={giveVoteMutation.isPending || loading}
-                        // loading={giveVoteMutation.isPending || loading}
+                        loading={giveVoteMutation.isPending || loading}
                         onClick={async (e) => {
                             e.preventDefault();
                             try {
@@ -87,7 +88,7 @@ export default function CandidateSelectionView() {
                                 await printPage(
                                     "/print/digital-vote/" + ballotNumber
                                 );
-                                await wait(6 * 1000);
+                                await wait(2 * 1000);
                                 modals.closeAll();
                                 setTimeout(() => router.replace("/"), 1000);
                             } catch (error) {
@@ -97,7 +98,7 @@ export default function CandidateSelectionView() {
                             }
                         }}
                     >
-                        {loading ? "Submitting and Printing..." : "Confirm"}
+                        Confirm
                     </Button>
                 </div>
             </div>
