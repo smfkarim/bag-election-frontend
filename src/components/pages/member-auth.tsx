@@ -46,6 +46,7 @@ export default function MemberAuth() {
                 deviceInfo?.mac_address,
                 Number(deviceInfo?.wrong_attempts ?? 0) + 1
             );
+            setPin("");
         }
     };
 

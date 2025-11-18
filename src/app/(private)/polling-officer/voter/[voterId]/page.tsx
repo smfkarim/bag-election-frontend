@@ -42,8 +42,6 @@ export default function VoterDetails() {
         uuid: voterId,
     };
 
-    console.log(voter, "VOTER");
-
     useEffect(() => {
         setBoothId(voteStatus?.six_digit_key.booth_id?.toString() ?? "");
         useVoteStore.setState({
