@@ -1,6 +1,5 @@
 "use client";
 import { useVoteStore } from "@/app/(private)/election/vote/vote.store";
-import ManualVoteBallot from "@/components/pages/manual-vote-ballot";
 import useAuth from "@/hooks/useAuth";
 import { useFullDeviceInfo } from "@/hooks/useFullDeviceInfo";
 import { getBucketURL } from "@/lib/helpers";
@@ -9,16 +8,14 @@ import { useGetBoothList } from "@/services/api/booth.api";
 import { useSendSixDigitCodeMutation } from "@/services/api/poll-officer.api";
 import { useVoteStatus } from "@/services/api/vote.api";
 import { useVoterStore } from "@/store/voter-store";
-import { wait } from "@/utils/helper";
 import { Button, Image, Select } from "@mantine/core";
 import { modals } from "@mantine/modals";
 import { notifications } from "@mantine/notifications";
 import dayjs from "dayjs";
 import { useParams, useRouter } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { AiOutlineKey, AiOutlinePrinter, AiOutlineSend } from "react-icons/ai";
 import { MdArrowBackIosNew } from "react-icons/md";
-import { useReactToPrint } from "react-to-print";
 
 export default function VoterDetails() {
     const sixDigitKeySendEmailMutation = useSendSixDigitCodeMutation();
@@ -30,11 +27,6 @@ export default function VoterDetails() {
     const { userId } = useAuth();
     const { voterId } = useParams<{ voterId: string }>();
     const router = useRouter();
-    const printRef = useRef<HTMLDivElement>(null);
-    const reactToPrintFn = useReactToPrint({
-        contentRef: printRef,
-        documentTitle: "Ballot Paper",
-    });
     const { data: voteStatus, refetch, isLoading } = useVoteStatus(voterId);
     const [boothId, setBoothId] = useState<null | string>(null);
     const [secretKeyShown, setSecretKeyShown] = useState(false);
@@ -114,12 +106,22 @@ export default function VoterDetails() {
     };
 
     const handleShowSecureCode = async () => {
-        await sixDigitKeySendEmailMutation.mutateAsync({
-            type: "print",
-            ...info,
-        });
-        setSecretKeyShown((v) => !v);
-        refetch();
+        try {
+            setLoading(true);
+            await sixDigitKeySendEmailMutation.mutateAsync({
+                type: "print",
+                ...info,
+            });
+            setSecretKeyShown((v) => !v);
+            refetch();
+        } catch (error) {
+            notifications.show({
+                color: "red",
+                message: "Something went wrong to show code.",
+            });
+        } finally {
+            setLoading(false);
+        }
     };
 
     const printBallotPaper = async () => {
@@ -154,7 +156,7 @@ export default function VoterDetails() {
                     </Button>
                     <Button
                         loading={loading}
-                        disabled={isLoading}
+                        disabled={loading}
                         onClick={async () => {
                             setLoading(true);
                             try {
@@ -168,7 +170,6 @@ export default function VoterDetails() {
                                     "/print/manual-vote/" +
                                         voteStatus?.eight_digit_key.secret_key
                                 );
-                                await wait(2 * 1000);
                                 // reactToPrintFn();
                             } finally {
                                 setLoading(false);
@@ -198,16 +199,10 @@ export default function VoterDetails() {
 
     if (isLoading) return null;
 
-    if (!voter) return <div>Voter not found.</div>;
+    if (!voter) return <div className=" mx-auto">Voter not found.</div>;
 
     return (
         <div>
-            {/* ✅ Keep this div mounted and offscreen (NOT hidden or display:none) */}
-            <div style={{ display: "none" }}>
-                <div ref={printRef}>
-                    <ManualVoteBallot />
-                </div>
-            </div>
             <div className="max-w-7xl mx-auto my-10 space-y-5">
                 {/* Header */}
                 <div className=" flex items-center justify-between px-5 py-2 rounded-2xl bg-green-100 ">
@@ -310,14 +305,14 @@ export default function VoterDetails() {
                                 }}
                                 value={boothId}
                                 onClear={() => {
-                                    setBoothId("");
+                                    setBoothId(null);
                                 }}
                             />
                             <Button
                                 onClick={handleShowSecureCode}
                                 radius={15}
-                                disabled={secretPrintOrSendDisabled}
-                                loading={sixDigitKeySendEmailMutation.isPending}
+                                disabled={loading}
+                                loading={loading}
                             >
                                 {secretKeyShown
                                     ? voter.secret_key
