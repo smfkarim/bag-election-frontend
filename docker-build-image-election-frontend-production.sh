@@ -6,7 +6,7 @@ set -e
 # --- Configuration
 # It's much safer to load secrets from environment variables than to hardcode them.
 # Before running this script, export your token: export DOCKER_HUB_TOKEN="your_token_here"
-AppVersion="prod-1.0.1"
+AppVersion="prod-1.0.10"
 DockerHubUser="smfkarimbdcalling"
 DockerHubUserToken="dckr_pat_8DrK2wL7K0C8PRGsZ0NmcPhwWD8" # Reads the token from an environment variable
 DockerHubRepoName="bag-voting-front-election"
