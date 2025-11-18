@@ -2,6 +2,7 @@
 
 import { SortedCandidate } from "@/@types/candidate";
 import { useVoteStore } from "@/app/(private)/election/vote/vote.store";
+import { PANEL_A_TITLE, PANEL_B_TITLE } from "@/constants";
 import { useGetPanelWiseCandidates } from "@/services/api/candidate.api";
 import { useGetBallotInfoMutation } from "@/services/api/vote.api";
 import { Image } from "@mantine/core";
@@ -16,7 +17,19 @@ export default function VoteSummary() {
     const { selectedCandidates } = useVoteStore();
     const { panelA, panelB, ...panelReq } = useGetPanelWiseCandidates();
     const { mutateAsync: getBallotInfo } = useGetBallotInfoMutation();
+    const panelATitle =
+        process.env.NEXT_PUBLIC_SHOW_PANEL_TITLE === "true"
+            ? PANEL_A_TITLE
+            : "Panel A";
+    const panelBTitle =
+        process.env.NEXT_PUBLIC_SHOW_PANEL_TITLE === "true"
+            ? PANEL_B_TITLE
+            : "Panel B";
 
+    /** PANEL SWAP LOGIC */
+    const swap = process.env.NEXT_PUBLIC_PANEL_SWAP === "true";
+    const orderA = swap ? "order-2" : "order-1";
+    const orderB = swap ? "order-1" : "order-2";
     useEffect(() => {
         getBallotInfo(ballotNumber)
             .then((info) => {
@@ -75,8 +88,21 @@ export default function VoteSummary() {
 
             {/* PANELS */}
             <main className="grid grid-cols-2 gap-6 flex-1 items-stretch ">
-                <PanelPrint title="Panel A" color="green" list={panelA ?? []} />
-                <PanelPrint title="Panel B" color="red" list={panelB ?? []} />
+                <div className={orderA}>
+                    <PanelPrint
+                        title={panelATitle}
+                        color="green"
+                        list={(panelA as any) ?? []}
+                    />
+                </div>
+
+                <div className={orderB}>
+                    <PanelPrint
+                        title={panelBTitle}
+                        color="red"
+                        list={(panelB as any) ?? []}
+                    />
+                </div>
             </main>
 
             {/* FOOTER */}
