@@ -7,9 +7,9 @@ import { getBucketURL } from "@/lib/helpers";
 import { printPage } from "@/lib/printer";
 import { useGetPanelWiseCandidates } from "@/services/api/candidate.api";
 import { useGiveBulkVoteMutation } from "@/services/api/voter.api";
-import { wait } from "@/utils/helper";
 import { Button, Image, Skeleton } from "@mantine/core";
 import { modals } from "@mantine/modals";
+import { notifications } from "@mantine/notifications";
 import dayjs from "dayjs";
 import { useRouter } from "next/navigation";
 import { useRef, useState } from "react";
@@ -88,13 +88,23 @@ export default function CandidateSelectionView() {
                                 await printPage(
                                     "/print/digital-vote/" + ballotNumber
                                 );
-                                await wait(2 * 1000);
                                 modals.closeAll();
                                 setTimeout(() => router.replace("/"), 1000);
                             } catch (error) {
+                                notifications.show({
+                                    autoClose: 40 * 1000,
+                                    title: "Error printing digital ballot",
+                                    message:
+                                        "Your vote is submitted. But there was an error while trying to print the digital vote. Please contact election-commission to reprint your ballot paper.",
+                                    color: "red",
+                                });
+                                modals.closeAll();
+                                router.replace("/");
+
                                 console.error(error);
                             } finally {
                                 setLoading(false);
+                                modals.closeAll();
                             }
                         }}
                     >
@@ -342,7 +352,9 @@ const AllPanelSection = (props: {
         <div className="flex-1 space-y-2 mt-5">
             <div
                 className={`p-5 rounded-2xl space-y-3 ${
-                    props.color === "red" ? "bg-red-800/10" : "bg-green-800/10"
+                    props.color === "violet"
+                        ? "bg-violet-800/10"
+                        : "bg-green-800/10"
                 }`}
             >
                 {all?.map((x, i) => (
@@ -381,7 +393,9 @@ const PanelSection = (props: {
             <h1 className="text-center text-2xl">{panelTitle}</h1>
             <div
                 className={`p-5 rounded-2xl space-y-3 ${
-                    props.color === "red" ? "bg-red-800/10" : "bg-green-800/10"
+                    props.color === "violet"
+                        ? "bg-violet-800/10"
+                        : "bg-green-800/10"
                 }`}
             >
                 {presidents?.map((x, i) => (
@@ -411,7 +425,9 @@ const VicePresidentPanelSection = (props: {
         <div className="flex-1 space-y-2 mt-5">
             <div
                 className={`p-5 rounded-2xl space-y-3 ${
-                    props.color === "red" ? "bg-red-800/10" : "bg-green-800/10"
+                    props.color === "violet"
+                        ? "bg-violet-800/10"
+                        : "bg-green-800/10"
                 }`}
             >
                 {vicePresidents?.map((x, i) => (
@@ -442,7 +458,9 @@ const ExecutiveSecretaryPanelSection = (props: {
         <div className="flex-1 space-y-2 mt-5">
             <div
                 className={`p-5 rounded-2xl space-y-3 ${
-                    props.color === "red" ? "bg-red-800/10" : "bg-green-800/10"
+                    props.color === "violet"
+                        ? "bg-violet-800/10"
+                        : "bg-green-800/10"
                 }`}
             >
                 {ExecutiveSecretary?.map((x, i) => (
