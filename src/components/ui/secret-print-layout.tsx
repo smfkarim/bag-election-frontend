@@ -9,10 +9,9 @@ const ThermalPrinterUI = ({
     secret: string;
 }) => {
     return (
-        <div className="flex justify-center items-center h-screen bg-gray-100">
             <div className="w-full max-w-xs text-center border border-gray-600 rounded-sm">
                 <Card shadow="sm" padding="lg" className="p-4">
-                    <p className="mb-2 text-lg font-semibold    ">{name}</p>
+                    <p className="mb-2 text-lg font-semibold">{name}</p>
 
                     <div className="my-8">
                         <strong>Your Secret</strong>
@@ -29,7 +28,6 @@ const ThermalPrinterUI = ({
                 {/* Dotted Line Outside the Card */}
                 <div className="mt-4 border-t-2 border-dotted border-gray-600 my-6"></div>
             </div>
-        </div>
     );
 };
 
