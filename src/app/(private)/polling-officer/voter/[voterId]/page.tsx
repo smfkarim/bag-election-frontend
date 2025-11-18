@@ -19,6 +19,7 @@ import { MdArrowBackIosNew } from "react-icons/md";
 
 export default function VoterDetails() {
     const sixDigitKeySendEmailMutation = useSendSixDigitCodeMutation();
+    const showSecretCodeMutation = useSendSixDigitCodeMutation();
     const sixDigitKeyPrintMutation = useSendSixDigitCodeMutation();
     const sixDigitKeyPrintBallotMutation = useSendSixDigitCodeMutation();
     const doBothMutation = useSendSixDigitCodeMutation();
@@ -49,21 +50,6 @@ export default function VoterDetails() {
         });
     }, [voteStatus]);
 
-    const sendSecretKey = async () => {
-        try {
-            await sixDigitKeySendEmailMutation.mutateAsync({
-                type: "mail",
-                ...info,
-            });
-            notifications.show({
-                title: "Success",
-                message: "Secret key sent to voter's email",
-            });
-        } finally {
-            refetch();
-        }
-    };
-
     const [secretPrintLoading, setSecretPrintLoading] = useState(false);
     const printSecretKey = async () => {
         try {
@@ -72,7 +58,7 @@ export default function VoterDetails() {
                 `/print/secret?name=${
                     voter?.first_name +
                     " " +
-                    voter?.last_name +
+                    voter?.middle_name +
                     " " +
                     voter?.last_name
                 }&secret=${voteStatus?.six_digit_key.secret_key}`
@@ -108,7 +94,7 @@ export default function VoterDetails() {
     const handleShowSecureCode = async () => {
         try {
             setLoading(true);
-            await sixDigitKeySendEmailMutation.mutateAsync({
+            await showSecretCodeMutation.mutateAsync({
                 type: "print",
                 ...info,
             });
@@ -121,6 +107,20 @@ export default function VoterDetails() {
             });
         } finally {
             setLoading(false);
+        }
+    };
+    const sendSecretKey = async () => {
+        try {
+            await sixDigitKeySendEmailMutation.mutateAsync({
+                type: "mail",
+                ...info,
+            });
+            notifications.show({
+                title: "Success",
+                message: "Secret key sent to voter's email",
+            });
+        } finally {
+            refetch();
         }
     };
 
@@ -223,16 +223,15 @@ export default function VoterDetails() {
                 <section className=" bg-gray-100 p-10  rounded-2xl space-y-10">
                     {/* Back */}
                     <div className="flex items-center justify-between">
-                        {!boothId
-                            ? null
-                            : (secretPrintOrSendDisabled ||
-                                  printBallotPaperDisabled) && (
-                                  <h1 className=" text-red-400 text-2xl">
-                                      {secretPrintOrSendDisabled
-                                          ? "Secret already generated"
-                                          : "Manual ballot already printed"}
-                                  </h1>
-                              )}
+                        {(voteStatus?.eight_digit_key?.vote_status ||
+                            voteStatus?.six_digit_key?.status) && (
+                            <h1 className=" text-red-400 text-2xl">
+                                {secretPrintOrSendDisabled
+                                    ? "Secret already generated"
+                                    : "Manual ballot already printed"}
+                            </h1>
+                        )}
+
                         <div
                             onClick={() => {
                                 router.back();
@@ -290,10 +289,16 @@ export default function VoterDetails() {
 
                     <div>
                         {/* Action Buttons */}
+                        {!isLoading && !boothId && (
+                            <p className="my-2">Select a booth to continue</p>
+                        )}
 
                         <div className=" flex gap-5 flex-wrap ">
                             <Select
-                                disabled={voteStatus?.six_digit_key.status}
+                                disabled={
+                                    voteStatus?.eight_digit_key?.vote_status ||
+                                    voteStatus?.six_digit_key?.status
+                                }
                                 placeholder="Select booth"
                                 data={boothList?.data?.data?.map((x) => ({
                                     label: x.name,

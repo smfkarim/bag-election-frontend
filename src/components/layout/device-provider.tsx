@@ -2,14 +2,13 @@
 import { useFullDeviceInfo } from "@/hooks/useFullDeviceInfo";
 import { LoadingOverlay, Select } from "@mantine/core";
 import { notifications } from "@mantine/notifications";
-import React, { PropsWithChildren, useEffect, useState } from "react";
-import { MdWarning, MdPhoneIphone, MdDownload } from "react-icons/md";
+import { PropsWithChildren, useEffect, useState } from "react";
+import { MdDownload, MdPhoneIphone, MdWarning } from "react-icons/md";
 
-import { Alert, Button, Paper, Stack, Text, ThemeIcon } from "@mantine/core";
-import useDeviceListener from "@/services/api/firebase.api";
-import { useForm } from "@mantine/form";
 import { useGetBoothList } from "@/services/api/booth.api";
-import { modals } from "@mantine/modals";
+import useDeviceListener from "@/services/api/firebase.api";
+import { Alert, Button, Paper, Stack } from "@mantine/core";
+import { useForm } from "@mantine/form";
 import axios from "axios";
 import { usePathname } from "next/navigation";
 
@@ -112,7 +111,7 @@ export function DeviceNotRegistered() {
                     </h1>
 
                     <Alert
-                        color="red"
+                        color="violet"
                         radius="md"
                         variant="light"
                         // icon={  }

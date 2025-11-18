@@ -1,5 +1,6 @@
 "use client";
 
+import { useDevSettings } from "@/store/dev-settings-store";
 import {
     Box,
     Button,
@@ -10,10 +11,9 @@ import {
     TextInput,
     Title,
 } from "@mantine/core";
-import { useDevSettings } from "@/store/dev-settings-store";
 import { notifications } from "@mantine/notifications";
-import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 
 export default function DevSettingsPage() {
     const devSettings = useDevSettings();
@@ -92,7 +92,7 @@ export default function DevSettingsPage() {
                     <Button
                         fullWidth
                         variant="light"
-                        color="red"
+                        color="violet"
                         radius="md"
                         onClick={() => {
                             localStorage.removeItem("dev-settings");

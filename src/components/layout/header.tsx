@@ -14,7 +14,7 @@ export default function Header() {
                     });
                 }}
                 variant="outline"
-                color="red"
+                color="violet"
             >
                 {" "}
                 Logout
