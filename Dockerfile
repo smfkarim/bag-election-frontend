@@ -29,6 +29,7 @@ COPY --from=builder /app/.next ./.next
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/public ./public
 COPY --from=builder /app/package.json ./package.json
+COPY --from=builder /app/next.config.ts ./next.config.ts
 
 # OPTIONAL: copy .env from builder into the production image (NOT recommended for secrets)
 # If you need the example env baked in for convenience, uncomment the line below.
