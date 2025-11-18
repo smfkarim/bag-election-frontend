@@ -51,6 +51,7 @@ export default function MemberAuth() {
 
     useEffect(() => {
         if (!!deviceInfo && deviceInfo?.wrong_attempts >= 3) {
+            setPin("");
             toggleDeviceLockStatus(deviceInfo.mac_address, true);
         }
     }, [deviceInfo?.wrong_attempts]);
@@ -62,6 +63,7 @@ export default function MemberAuth() {
                 selectedCandidates: [],
                 voter_id: "",
             });
+            setPin("");
             cookie.remove("isVoter");
         }, 2000);
 
