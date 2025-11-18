@@ -14,7 +14,7 @@ export const useVoterStore = create<VoterStore>()(
         }),
         {
             skipHydration: false,
-            name: "auth",
+            name: "voter_store",
             storage: createJSONStorage(() => secureStorage),
         }
     )
