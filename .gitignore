@@ -44,3 +44,4 @@ next-env.d.ts
 # lockfile
 package-lock.json
 bun.lock
+docker-compose-vag-election-fontend-staging.yaml

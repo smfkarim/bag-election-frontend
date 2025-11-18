@@ -1,0 +1,16 @@
+version: "3.5"
+
+networks:
+  web-app-net:
+    name: web-app-net
+    driver: bridge
+
+services:
+  frontend:
+    container_name: frontend-voting-election
+    image: smfkarimbdcalling/bag-voting-front-election:frontend-service-1.0.4
+    ports:
+      - 3001:3000
+    networks:
+      - web-app-net
+##End of Scripts
