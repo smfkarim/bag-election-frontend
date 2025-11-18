@@ -21,17 +21,20 @@ type AuthState = {
     }) => void;
 };
 
+// Example secure storage that works with SSR
 export const secureStorage = {
-    getItem: (name: string) => {
-        const item = localStorage.getItem(name);
-        if (!item) return null;
-        const decoded = atob(item);
-        return decoded;
+    getItem: (name: string): string | null => {
+        if (typeof window === "undefined") return null;
+        return localStorage.getItem(name);
     },
-    setItem: (name: string, value: string) => {
-        localStorage.setItem(name, btoa(value)); // Base64 encoding
+    setItem: (name: string, value: string): void => {
+        if (typeof window === "undefined") return;
+        localStorage.setItem(name, value);
     },
-    removeItem: (name: string) => localStorage.removeItem(name),
+    removeItem: (name: string): void => {
+        if (typeof window === "undefined") return;
+        localStorage.removeItem(name);
+    },
 };
 
 export const useAuthStore = create<AuthState>()(

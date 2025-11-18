@@ -49,7 +49,7 @@ export default function Page() {
         if (data?.voters?.length === 1) {
             let x = data?.voters[0];
             router.push(`/polling-officer/voter/${x.uuid}`);
-            useVoterStore.setState({ voter: x as any });
+            useVoterStore.setState({ voter: x });
             useVoteStore.setState({ ballotNumber: x.ballot_number });
         }
     }, [data]);

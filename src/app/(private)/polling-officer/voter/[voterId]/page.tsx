@@ -23,7 +23,7 @@ export default function VoterDetails() {
     const sixDigitKeyPrintBallotMutation = useSendSixDigitCodeMutation();
     const doBothMutation = useSendSixDigitCodeMutation();
     const { device } = useFullDeviceInfo();
-    const { voter } = useVoterStore();
+    const voter = useVoterStore((state) => state.voter);
     const { userId } = useAuth();
     const { voterId } = useParams<{ voterId: string }>();
     const router = useRouter();
@@ -41,6 +41,8 @@ export default function VoterDetails() {
         user_id: userId ?? "",
         uuid: voterId,
     };
+
+    console.log(voter, "VOTER");
 
     useEffect(() => {
         setBoothId(voteStatus?.six_digit_key.booth_id?.toString() ?? "");
@@ -311,7 +313,11 @@ export default function VoterDetails() {
                             <Button
                                 onClick={handleShowSecureCode}
                                 radius={15}
-                                disabled={loading}
+                                disabled={
+                                    loading ||
+                                    printBallotPaperDisabled ||
+                                    secretPrintOrSendDisabled
+                                }
                                 loading={loading}
                             >
                                 {secretKeyShown
