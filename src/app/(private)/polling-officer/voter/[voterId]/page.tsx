@@ -5,6 +5,7 @@ import { useFullDeviceInfo } from "@/hooks/useFullDeviceInfo";
 import { getBucketURL } from "@/lib/helpers";
 import { printPage } from "@/lib/printer";
 import { useGetBoothList } from "@/services/api/booth.api";
+import { manualBallotPrintCountIncrement } from "@/services/api/firebase.api";
 import { useSendSixDigitCodeMutation } from "@/services/api/poll-officer.api";
 import { useVoteStatus } from "@/services/api/vote.api";
 import { useVoterStore } from "@/store/voter-store";
@@ -170,6 +171,7 @@ export default function VoterDetails() {
                                     "/print/manual-vote/" +
                                         voteStatus?.eight_digit_key.secret_key
                                 );
+                                await manualBallotPrintCountIncrement();
                                 // reactToPrintFn();
                             } finally {
                                 setLoading(false);

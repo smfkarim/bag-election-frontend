@@ -6,6 +6,7 @@ import { PropsWithChildren, useEffect, useState } from "react";
 import { MdDownload, MdPhoneIphone, MdWarning } from "react-icons/md";
 
 import { useGetBoothList } from "@/services/api/booth.api";
+import { useGetElectionSetupById } from "@/services/api/election.api";
 import useDeviceListener from "@/services/api/firebase.api";
 import { Alert, Button, Paper, Stack } from "@mantine/core";
 import { useForm } from "@mantine/form";
@@ -167,6 +168,8 @@ export function DeviceNotRegistered() {
 
 // --- Page 2: Companion Software Required (Animated) ---
 export function CompanionSoftwareRequired() {
+    const { data, isLoading } = useGetElectionSetupById("1");
+
     return (
         <div className="flex h-screen w-full flex-col items-center justify-center bg-gradient-to-br from-gray-900 via-gray-800 to-black text-white p-6 relative overflow-hidden">
             {/* Soft Glow */}
@@ -193,8 +196,9 @@ export function CompanionSoftwareRequired() {
                     </p>
 
                     <Button
+                        disabled={isLoading || !data?.data.driver_link}
                         component="a"
-                        href="https://example.com/download-companion"
+                        href={data?.data?.driver_link ?? ""}
                         target="_blank"
                         radius="md"
                         fullWidth

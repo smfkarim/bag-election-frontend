@@ -1,7 +1,6 @@
 import { DashboardJSON, DeviceJSON } from "@/@types/firebase";
-import { useFullDeviceInfo } from "@/hooks/useFullDeviceInfo";
 import { autoLogin, db, dbPath } from "@/lib/firebase";
-import { onValue, ref, set } from "firebase/database";
+import { increment, onValue, ref, set } from "firebase/database";
 import { useEffect, useState } from "react";
 
 export function useDashboardListener() {
@@ -103,6 +102,25 @@ export const setWrongAttempts = async (deviceMAC: string, attempts: number) => {
         await set(deviceRef, attempts);
     } catch (error) {
         console.error("Error setting wrong attempts:", error);
+        throw error;
+    }
+};
+
+export const manualBallotPrintCountIncrement = async () => {
+    try {
+        await autoLogin();
+
+        const dashboardRef = ref(
+            db,
+            dbPath("dashboard/votingCounts/manualBallotPrints")
+        );
+
+        // Atomically increment - no race conditions possible
+        await set(dashboardRef, increment(1));
+
+        return true;
+    } catch (error) {
+        console.error("Error incrementing ballot print count:", error);
         throw error;
     }
 };
