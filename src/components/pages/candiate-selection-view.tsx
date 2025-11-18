@@ -7,6 +7,7 @@ import { getBucketURL } from "@/lib/helpers";
 import { printPage } from "@/lib/printer";
 import { useGetPanelWiseCandidates } from "@/services/api/candidate.api";
 import { useGiveBulkVoteMutation } from "@/services/api/voter.api";
+import { wait } from "@/utils/helper";
 import { Button, Image, Skeleton } from "@mantine/core";
 import { modals } from "@mantine/modals";
 import dayjs from "dayjs";
@@ -15,7 +16,6 @@ import { useRef, useState } from "react";
 import { AiOutlineCheck } from "react-icons/ai";
 import { useReactToPrint } from "react-to-print";
 import CandidateSelectionPrint from "./candiate-selection-print";
-import { wait } from "@/utils/helper";
 
 export type TCandidate = {
     id: number;
@@ -61,7 +61,7 @@ export default function CandidateSelectionView() {
                     <Button
                         disabled={giveVoteMutation.isPending || loading}
                         variant="outline"
-                        color="red"
+                        color="violet"
                         onClick={() => {
                             modals.closeAll();
                         }}
@@ -179,7 +179,7 @@ export default function CandidateSelectionView() {
                                     type={first}
                                     candidateList={(panelB as any) ?? []}
                                     name="B"
-                                    color="red"
+                                    color="violet"
                                 />
                             </div>
 
@@ -206,7 +206,7 @@ export default function CandidateSelectionView() {
                                         type={second}
                                         candidateList={(panelB as any) ?? []}
                                         name="B"
-                                        color="red"
+                                        color="violet"
                                     />
                                 </div>
                             </div>
@@ -228,7 +228,7 @@ export default function CandidateSelectionView() {
                                     <AllPanelSection
                                         candidateList={(panelB as any) ?? []}
                                         name="B"
-                                        color="red"
+                                        color="violet"
                                     />
                                 </div>
                             </div>
@@ -255,7 +255,7 @@ export default function CandidateSelectionView() {
                                         type={fourth}
                                         candidateList={(panelB as any) ?? []}
                                         name="B"
-                                        color="red"
+                                        color="violet"
                                     />
                                 </div>
                             </div>
@@ -330,7 +330,7 @@ export default function CandidateSelectionView() {
 const AllPanelSection = (props: {
     name: string;
     candidateList: SortedCandidate[];
-    color: "red" | "green";
+    color: "violet" | "green";
 }) => {
     const all = props.candidateList.filter(
         (candidate) =>
@@ -363,7 +363,7 @@ const PanelSection = (props: {
     type: string;
     name: string;
     candidateList: SortedCandidate[];
-    color: "red" | "green";
+    color: "violet" | "green";
 }) => {
     const presidents = props.candidateList.filter(
         (candidate) => candidate.type === props.type
@@ -402,7 +402,7 @@ const VicePresidentPanelSection = (props: {
     type: string;
     name: string;
     candidateList: SortedCandidate[];
-    color: "red" | "green";
+    color: "violet" | "green";
 }) => {
     const vicePresidents = props.candidateList.filter(
         (candidate) => candidate.type === props.type
@@ -432,7 +432,7 @@ const ExecutiveSecretaryPanelSection = (props: {
     type: string;
     name: string;
     candidateList: SortedCandidate[];
-    color: "red" | "green";
+    color: "violet" | "green";
 }) => {
     console.log(props?.candidateList);
     const ExecutiveSecretary = props.candidateList.filter(

@@ -62,7 +62,7 @@ export default function CandidateSelectionPrint() {
                     <div className={orderB}>
                         <PresidentsPanelPrint
                             title={panelBTitle}
-                            color="red"
+                            color="violet"
                             list={(panelB as any) ?? []}
                         />
                     </div>
@@ -87,7 +87,7 @@ export default function CandidateSelectionPrint() {
                     <div className={orderB}>
                         <VicePresidentsPanelPrint
                             title={panelBTitle}
-                            color="red"
+                            color="violet"
                             list={(panelB as any) ?? []}
                         />
                     </div>
@@ -108,7 +108,7 @@ export default function CandidateSelectionPrint() {
                     <div className={orderB}>
                         <OthersAllsPanelPrint
                             title={panelBTitle}
-                            color="red"
+                            color="violet"
                             list={(panelB as any) ?? []}
                         />
                     </div>
@@ -133,7 +133,7 @@ export default function CandidateSelectionPrint() {
                     <div className={orderB}>
                         <ExecutiveSecretaryPanelPrint
                             title={panelBTitle}
-                            color="red"
+                            color="violet"
                             list={(panelB as any) ?? []}
                         />
                     </div>
@@ -158,7 +158,7 @@ const PresidentsPanelPrint = ({
     list,
 }: {
     title: string;
-    color: "red" | "green";
+    color: "violet" | "green";
     list: {
         panelId: string;
         name: string;
@@ -179,7 +179,7 @@ const PresidentsPanelPrint = ({
         <div className="border border-gray-400 rounded-md p-2 flex flex-col h-full flex-1">
             <h2
                 className={`text-center font-semibold mb-0 ${
-                    color === "green" ? "text-green-700" : "text-red-700"
+                    color === "green" ? "text-green-700" : "text-violet-700"
                 }`}
             >
                 {title}
@@ -226,7 +226,7 @@ const VicePresidentsPanelPrint = ({
     list,
 }: {
     title: string;
-    color: "red" | "green";
+    color: "violet" | "green";
     list: any[];
 }) => {
     const vicePresidents = list.filter(
@@ -270,7 +270,7 @@ const OthersAllsPanelPrint = ({
     list,
 }: {
     title: string;
-    color: "red" | "green";
+    color: "violet" | "green";
     list: any[];
 }) => {
     const othersAll = list.filter(
@@ -317,7 +317,7 @@ const ExecutiveSecretaryPanelPrint = ({
     list,
 }: {
     title: string;
-    color: "red" | "green";
+    color: "violet" | "green";
     list: any[];
 }) => {
     const executiveSecretary = list.filter(

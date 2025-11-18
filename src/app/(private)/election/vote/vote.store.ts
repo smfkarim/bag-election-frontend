@@ -115,7 +115,7 @@ export const useVoteStore = create<TVoteStore>()(
             },
         }),
         {
-            name: "voter_store",
+            name: "vote_store",
             storage: createJSONStorage(() => secureStorage),
         }
     )

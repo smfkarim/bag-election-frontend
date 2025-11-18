@@ -1,4 +1,5 @@
-import { Card, Text } from "@mantine/core";
+import { Card } from "@mantine/core";
+import RightReserved from "./right-reserved";
 
 const ThermalPrinterUI = ({
     name,
@@ -9,11 +10,9 @@ const ThermalPrinterUI = ({
 }) => {
     return (
         <div className="flex justify-center items-center h-screen bg-gray-100">
-            <div className="w-full max-w-xs text-center border border-gray-600 rounded-lg">
+            <div className="w-full max-w-xs text-center border border-gray-600 rounded-sm">
                 <Card shadow="sm" padding="lg" className="p-4">
-                    <p className="mb-2">
-                        <strong>Name:</strong> {name}
-                    </p>
+                    <p className="mb-2 text-lg font-semibold    ">{name}</p>
 
                     <div className="my-8">
                         <strong>Your Secret</strong>
@@ -24,9 +23,7 @@ const ThermalPrinterUI = ({
                         </p>
                     </div>
 
-                    <div className="mt-6">
-                        <Text size="sm">Powered by Betopia HRM System</Text>
-                    </div>
+                    <RightReserved />
                 </Card>
 
                 {/* Dotted Line Outside the Card */}

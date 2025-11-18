@@ -1,6 +1,5 @@
 "use client";
 
-import { TForeignId } from "@/@types";
 import { useVoteStore } from "@/app/(private)/election/vote/vote.store";
 import { PANEL_A_TITLE, PANEL_B_TITLE } from "@/constants";
 import { getBucketURL } from "@/lib/helpers";
@@ -8,6 +7,7 @@ import { useGetPanelWiseCandidates } from "@/services/api/candidate.api";
 import dayjs from "dayjs";
 import Image from "next/image";
 import { useParams } from "next/navigation";
+import RightReserved from "../ui/right-reserved";
 
 export default function ManualVoteBallot() {
     const params = useParams<{ ballotNumber: string }>();
@@ -29,9 +29,16 @@ export default function ManualVoteBallot() {
             : "Panel B";
 
     return (
-        <div className="a4-page bg-white text-black p-10 flex flex-col justify-between">
+        <div className="a4-page relative bg-white text-black p-10 flex flex-col justify-between">
+            {/* <Image
+                className=" absolute -z-10 size-100 opacity-50 top-1/2 left-1/2 -translate-y-1/2 -translate-x-1/2"
+                height={500}
+                width={500}
+                alt=""
+                src={"/bag_logo.png"}
+            /> */}
             {/* HEADER */}
-            <header className="flex items-center justify-between border-b pb-3 mb-4 shrink-0">
+            <header className="flex items-center justify-between mb-2 shrink-0">
                 <div className="w-20">
                     <Image
                         src="/bag_logo.png"
@@ -71,7 +78,7 @@ export default function ManualVoteBallot() {
                     <div className={orderB}>
                         <PresidentsPanelPrint
                             title={panelBTitle}
-                            color="red"
+                            color="violet"
                             list={(panelB as any) ?? []}
                         />
                     </div>
@@ -95,7 +102,7 @@ export default function ManualVoteBallot() {
                         <div className={orderB}>
                             <VicePresidentsPanelPrint
                                 title={panelBTitle}
-                                color="red"
+                                color="violet"
                                 list={(panelB as any) ?? []}
                             />
                         </div>
@@ -104,7 +111,7 @@ export default function ManualVoteBallot() {
 
                 {/* OTHERS */}
                 <div>
-                    <div className="h-px bg-black mt-5"></div>
+                    <div className="h-px bg-black "></div>
                     <main className="grid grid-cols-2 gap-6 flex-1 items-stretch mt-2">
                         <div className={orderA}>
                             <OthersAllsPanelPrint
@@ -117,7 +124,7 @@ export default function ManualVoteBallot() {
                         <div className={orderB}>
                             <OthersAllsPanelPrint
                                 title={panelBTitle}
-                                color="red"
+                                color="violet"
                                 list={(panelB as any) ?? []}
                             />
                         </div>
@@ -126,11 +133,11 @@ export default function ManualVoteBallot() {
 
                 {/* SECRETARY */}
                 <div>
-                    <h1 className="text-base font-semibold text-center mt-2">
+                    <h1 className="text-base font-semibold text-center ">
                         Vote five from the following ten
                     </h1>
 
-                    <main className="grid grid-cols-2 gap-6 flex-1 items-stretch mt-2">
+                    <main className="grid grid-cols-2 gap-6 flex-1 items-stretch ">
                         <div className={orderA}>
                             <ExecutiveSecretaryPanelPrint
                                 title={panelATitle}
@@ -142,7 +149,7 @@ export default function ManualVoteBallot() {
                         <div className={orderB}>
                             <ExecutiveSecretaryPanelPrint
                                 title={panelBTitle}
-                                color="red"
+                                color="violet"
                                 list={(panelB as any) ?? []}
                             />
                         </div>
@@ -151,9 +158,7 @@ export default function ManualVoteBallot() {
             </div>
 
             {/* FOOTER */}
-            <footer className="text-center text-xs text-gray-500 pt-3 shrink-0">
-                <p>System Generated Ballot Paper</p>
-            </footer>
+            <RightReserved />
         </div>
     );
 }
@@ -211,7 +216,7 @@ const PanelTable = ({
             {title ? (
                 <h2
                     className={`text-center font-semibold ${
-                        color === "green" ? "text-green-700" : "text-red-700"
+                        color === "green" ? "text-green-700" : "text-violet-700"
                     }`}
                 >
                     {title}

@@ -1,6 +1,5 @@
 "use client";
 import { useVoteStore } from "@/app/(private)/election/vote/vote.store";
-import ManualVoteBallot from "@/components/pages/manual-vote-ballot";
 import useAuth from "@/hooks/useAuth";
 import { useFullDeviceInfo } from "@/hooks/useFullDeviceInfo";
 import { getBucketURL } from "@/lib/helpers";
@@ -9,32 +8,26 @@ import { useGetBoothList } from "@/services/api/booth.api";
 import { useSendSixDigitCodeMutation } from "@/services/api/poll-officer.api";
 import { useVoteStatus } from "@/services/api/vote.api";
 import { useVoterStore } from "@/store/voter-store";
-import { wait } from "@/utils/helper";
 import { Button, Image, Select } from "@mantine/core";
 import { modals } from "@mantine/modals";
 import { notifications } from "@mantine/notifications";
 import dayjs from "dayjs";
 import { useParams, useRouter } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { AiOutlineKey, AiOutlinePrinter, AiOutlineSend } from "react-icons/ai";
 import { MdArrowBackIosNew } from "react-icons/md";
-import { useReactToPrint } from "react-to-print";
 
 export default function VoterDetails() {
     const sixDigitKeySendEmailMutation = useSendSixDigitCodeMutation();
+    const showSecretCodeMutation = useSendSixDigitCodeMutation();
     const sixDigitKeyPrintMutation = useSendSixDigitCodeMutation();
     const sixDigitKeyPrintBallotMutation = useSendSixDigitCodeMutation();
     const doBothMutation = useSendSixDigitCodeMutation();
     const { device } = useFullDeviceInfo();
-    const { voter } = useVoterStore();
+    const voter = useVoterStore((state) => state.voter);
     const { userId } = useAuth();
     const { voterId } = useParams<{ voterId: string }>();
     const router = useRouter();
-    const printRef = useRef<HTMLDivElement>(null);
-    const reactToPrintFn = useReactToPrint({
-        contentRef: printRef,
-        documentTitle: "Ballot Paper",
-    });
     const { data: voteStatus, refetch, isLoading } = useVoteStatus(voterId);
     const [boothId, setBoothId] = useState<null | string>(null);
     const [secretKeyShown, setSecretKeyShown] = useState(false);
@@ -57,21 +50,6 @@ export default function VoterDetails() {
         });
     }, [voteStatus]);
 
-    const sendSecretKey = async () => {
-        try {
-            await sixDigitKeySendEmailMutation.mutateAsync({
-                type: "mail",
-                ...info,
-            });
-            notifications.show({
-                title: "Success",
-                message: "Secret key sent to voter's email",
-            });
-        } finally {
-            refetch();
-        }
-    };
-
     const [secretPrintLoading, setSecretPrintLoading] = useState(false);
     const printSecretKey = async () => {
         try {
@@ -80,7 +58,7 @@ export default function VoterDetails() {
                 `/print/secret?name=${
                     voter?.first_name +
                     " " +
-                    voter?.last_name +
+                    voter?.middle_name +
                     " " +
                     voter?.last_name
                 }&secret=${voteStatus?.six_digit_key.secret_key}`
@@ -114,12 +92,36 @@ export default function VoterDetails() {
     };
 
     const handleShowSecureCode = async () => {
-        await sixDigitKeySendEmailMutation.mutateAsync({
-            type: "print",
-            ...info,
-        });
-        setSecretKeyShown((v) => !v);
-        refetch();
+        try {
+            setLoading(true);
+            await showSecretCodeMutation.mutateAsync({
+                type: "print",
+                ...info,
+            });
+            setSecretKeyShown((v) => !v);
+            refetch();
+        } catch (error) {
+            notifications.show({
+                color: "red",
+                message: "Something went wrong to show code.",
+            });
+        } finally {
+            setLoading(false);
+        }
+    };
+    const sendSecretKey = async () => {
+        try {
+            await sixDigitKeySendEmailMutation.mutateAsync({
+                type: "mail",
+                ...info,
+            });
+            notifications.show({
+                title: "Success",
+                message: "Secret key sent to voter's email",
+            });
+        } finally {
+            refetch();
+        }
     };
 
     const printBallotPaper = async () => {
@@ -154,7 +156,7 @@ export default function VoterDetails() {
                     </Button>
                     <Button
                         loading={loading}
-                        disabled={isLoading}
+                        disabled={loading}
                         onClick={async () => {
                             setLoading(true);
                             try {
@@ -168,7 +170,6 @@ export default function VoterDetails() {
                                     "/print/manual-vote/" +
                                         voteStatus?.eight_digit_key.secret_key
                                 );
-                                await wait(2 * 1000);
                                 // reactToPrintFn();
                             } finally {
                                 setLoading(false);
@@ -198,16 +199,10 @@ export default function VoterDetails() {
 
     if (isLoading) return null;
 
-    if (!voter) return <div>Voter not found.</div>;
+    if (!voter) return <div className=" mx-auto">Voter not found.</div>;
 
     return (
         <div>
-            {/* ✅ Keep this div mounted and offscreen (NOT hidden or display:none) */}
-            <div style={{ display: "none" }}>
-                <div ref={printRef}>
-                    <ManualVoteBallot />
-                </div>
-            </div>
             <div className="max-w-7xl mx-auto my-10 space-y-5">
                 {/* Header */}
                 <div className=" flex items-center justify-between px-5 py-2 rounded-2xl bg-green-100 ">
@@ -228,16 +223,15 @@ export default function VoterDetails() {
                 <section className=" bg-gray-100 p-10  rounded-2xl space-y-10">
                     {/* Back */}
                     <div className="flex items-center justify-between">
-                        {!boothId
-                            ? null
-                            : (secretPrintOrSendDisabled ||
-                                  printBallotPaperDisabled) && (
-                                  <h1 className=" text-red-400 text-2xl">
-                                      {secretPrintOrSendDisabled
-                                          ? "Secret already generated"
-                                          : "Manual ballot already printed"}
-                                  </h1>
-                              )}
+                        {(voteStatus?.eight_digit_key?.vote_status ||
+                            voteStatus?.six_digit_key?.status) && (
+                            <h1 className=" text-red-400 text-2xl">
+                                {secretPrintOrSendDisabled
+                                    ? "Secret already generated"
+                                    : "Manual ballot already printed"}
+                            </h1>
+                        )}
+
                         <div
                             onClick={() => {
                                 router.back();
@@ -295,10 +289,16 @@ export default function VoterDetails() {
 
                     <div>
                         {/* Action Buttons */}
+                        {!isLoading && !boothId && (
+                            <p className="my-2">Select a booth to continue</p>
+                        )}
 
                         <div className=" flex gap-5 flex-wrap ">
                             <Select
-                                disabled={voteStatus?.six_digit_key.status}
+                                disabled={
+                                    voteStatus?.eight_digit_key?.vote_status ||
+                                    voteStatus?.six_digit_key?.status
+                                }
                                 placeholder="Select booth"
                                 data={boothList?.data?.data?.map((x) => ({
                                     label: x.name,
@@ -310,14 +310,18 @@ export default function VoterDetails() {
                                 }}
                                 value={boothId}
                                 onClear={() => {
-                                    setBoothId("");
+                                    setBoothId(null);
                                 }}
                             />
                             <Button
                                 onClick={handleShowSecureCode}
                                 radius={15}
-                                disabled={secretPrintOrSendDisabled}
-                                loading={sixDigitKeySendEmailMutation.isPending}
+                                disabled={
+                                    loading ||
+                                    printBallotPaperDisabled ||
+                                    secretPrintOrSendDisabled
+                                }
+                                loading={loading}
                             >
                                 {secretKeyShown
                                     ? voter.secret_key

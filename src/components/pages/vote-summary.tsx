@@ -9,6 +9,7 @@ import { Image } from "@mantine/core";
 import dayjs from "dayjs";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
+import RightReserved from "../ui/right-reserved";
 
 export default function VoteSummary() {
     const { ballotNumber }: { ballotNumber: string } = useParams();
@@ -99,16 +100,14 @@ export default function VoteSummary() {
                 <div className={orderB}>
                     <PanelPrint
                         title={panelBTitle}
-                        color="red"
+                        color="violet"
                         list={(panelB as any) ?? []}
                     />
                 </div>
             </main>
 
             {/* FOOTER */}
-            <footer className="text-center text-xs text-gray-500 pt-3 shrink-0">
-                <p>System Generated Ballot Paper</p>
-            </footer>
+            <RightReserved />
         </div>
     );
 }
@@ -119,7 +118,7 @@ const PanelPrint = ({
     list,
 }: {
     title: string;
-    color: "red" | "green";
+    color: "violet" | "green";
     list: SortedCandidate[];
 }) => {
     const selectedCandidates = useVoteStore(
@@ -129,7 +128,7 @@ const PanelPrint = ({
         <div className="border border-gray-400 rounded-md p-3 flex flex-col h-full">
             <h2
                 className={`text-center font-semibold mb-2 ${
-                    color === "green" ? "text-green-700" : "text-red-700"
+                    color === "green" ? "text-green-700" : "text-violet-700"
                 }`}
             >
                 {title}

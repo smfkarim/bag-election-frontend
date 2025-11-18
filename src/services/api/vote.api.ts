@@ -28,7 +28,7 @@ interface BallotCandidate {
 export const useVoteStatus = (voter_id?: string) => {
     return useQuery({
         enabled: !!voter_id,
-        queryKey: ["vote-status"],
+        queryKey: ["vote-status", voter_id],
         queryFn: async () =>
             (
                 await api.post<{ data: ElectionStatusResponse }>(`/v1/status`, {

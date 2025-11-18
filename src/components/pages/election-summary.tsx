@@ -5,7 +5,6 @@ import { getBucketURL } from "@/lib/helpers";
 import { useGetPanelWiseVoteCountList } from "@/services/api/candidate.api";
 import { Image } from "@mantine/core";
 import dayjs from "dayjs";
-import { useParams } from "next/navigation";
 
 export default function ElectionSummary() {
     // const { electionId } = useParams<{ electionId: string }>();
@@ -45,7 +44,7 @@ export default function ElectionSummary() {
                 />
                 <PanelPrint
                     title="Panel B"
-                    color="red"
+                    color="violet"
                     list={(panelB as any) ?? []}
                 />
             </main>
@@ -64,7 +63,7 @@ const PanelPrint = ({
     list,
 }: {
     title: string;
-    color: "red" | "green";
+    color: "violet" | "green";
     list: {
         panelId: string;
         name: string;
@@ -81,7 +80,7 @@ const PanelPrint = ({
         <div className="border border-gray-400 rounded-md p-3 flex flex-col h-full">
             <h2
                 className={`text-center font-semibold mb-2 ${
-                    color === "green" ? "text-green-700" : "text-red-700"
+                    color === "green" ? "text-green-700" : "text-violet-700"
                 }`}
             >
                 {title}

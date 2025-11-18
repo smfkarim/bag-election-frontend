@@ -18,7 +18,7 @@ export default function MemberAuth() {
     const deviceInfo =
         devices?.[device?.macAddress as keyof typeof devices] ?? null;
     const router = useRouter();
-    const { mutateAsync: validateSixDigitCode } =
+    const { mutateAsync: validateSixDigitCode, isPending } =
         useValidateSixDigitKeyMutation();
     const [pin, setPin] = useState("");
     const blocked = Boolean(
@@ -46,11 +46,13 @@ export default function MemberAuth() {
                 deviceInfo?.mac_address,
                 Number(deviceInfo?.wrong_attempts ?? 0) + 1
             );
+            setPin("");
         }
     };
 
     useEffect(() => {
         if (!!deviceInfo && deviceInfo?.wrong_attempts >= 3) {
+            setPin("");
             toggleDeviceLockStatus(deviceInfo.mac_address, true);
         }
     }, [deviceInfo?.wrong_attempts]);
@@ -62,6 +64,7 @@ export default function MemberAuth() {
                 selectedCandidates: [],
                 voter_id: "",
             });
+            setPin("");
             cookie.remove("isVoter");
         }, 2000);
 
@@ -115,6 +118,7 @@ export default function MemberAuth() {
                     type="submit"
                     disabled={pin.length !== 6 || blocked}
                     onClick={handleContinue}
+                    loading={isPending}
                     classNames={{
                         root: "disabled:bg-green-800!  disabled:text-white! disabled:opacity-50",
                     }}
