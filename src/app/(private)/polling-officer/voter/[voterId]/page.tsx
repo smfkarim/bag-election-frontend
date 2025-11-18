@@ -55,14 +55,11 @@ export default function VoterDetails() {
     const printSecretKey = async () => {
         try {
             setSecretPrintLoading(true);
+            const name = `${voter?.first_name} ${
+                voter?.middle_name ? voter?.middle_name + " " : ""
+            }${voter?.last_name}`;
             await printPage(
-                `/print/secret?name=${
-                    voter?.first_name +
-                    " " +
-                    voter?.middle_name +
-                    " " +
-                    voter?.last_name
-                }&secret=${voteStatus?.six_digit_key.secret_key}`
+                `/print/secret?name=${name}&secret=${voteStatus?.six_digit_key.secret_key}`
             );
             await sixDigitKeyPrintMutation.mutateAsync({
                 type: "print",
@@ -199,9 +196,15 @@ export default function VoterDetails() {
         printBallotPaperDisabled ||
         voteStatus?.six_digit_key.status;
 
-    if (isLoading) return null;
+    useEffect(() => {
+        if (!voter) {
+            router.back();
+        }
+    }, [voter]);
 
-    if (!voter) return <div className=" mx-auto">Voter not found.</div>;
+    if (!voter) return null;
+
+    if (isLoading) return null;
 
     return (
         <div>
