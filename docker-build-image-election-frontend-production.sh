@@ -3,6 +3,8 @@
 # --- Best Practice: Exit immediately if a command exits with a non-zero status.
 set -e
 
+
+
 # --- Configuration
 # It's much safer to load secrets from environment variables than to hardcode them.
 # Before running this script, export your token: export DOCKER_HUB_TOKEN="your_token_here"
