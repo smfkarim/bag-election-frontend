@@ -3,7 +3,7 @@
 # --- Best Practice: Exit immediately if a command exits with a non-zero status.
 set -e
 
-
+npm run build
 
 # --- Configuration
 # It's much safer to load secrets from environment variables than to hardcode them.
