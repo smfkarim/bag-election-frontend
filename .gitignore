@@ -45,3 +45,5 @@ next-env.d.ts
 package-lock.json
 bun.lock
 docker-compose-vag-election-fontend-staging.yaml
+docker-build-image-election-frontend-production.sh
+docker-build-image-election-staging-frontend.sh
