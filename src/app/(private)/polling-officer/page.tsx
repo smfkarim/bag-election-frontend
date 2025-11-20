@@ -33,7 +33,7 @@ export default function Page() {
     });
 
     // Fetch only when searchParams is not null
-    const { data, isLoading, isError } = useVoterSearchQuery(
+    const { data, isLoading, isError, error } = useVoterSearchQuery(
         {
             type: (searchParams?.type as any) ?? "national_id",
             query: searchParams?.query ?? "",
@@ -159,11 +159,11 @@ export default function Page() {
                             />
                         )}
 
-                        {isError && (
+                        {/* {isError && (
                             <p className="text-center text-red-500 py-10">
-                                Something went wrong. Please try again.
+                                {error}
                             </p>
-                        )}
+                        )} */}
                     </div>
                 </div>
             </PaperWrapper>

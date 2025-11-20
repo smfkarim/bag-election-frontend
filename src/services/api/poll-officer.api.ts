@@ -1,10 +1,12 @@
 import { TForeignId } from "@/@types";
 import { VoterSearchResponse } from "@/@types/voter";
+import { parseErrorMessage } from "@/lib/helpers";
 import {
     UndefinedInitialDataOptions,
     useMutation,
     useQuery,
 } from "@tanstack/react-query";
+import { AxiosError } from "axios";
 import api from ".";
 
 export const useVoterSearchQuery = (
@@ -24,9 +26,15 @@ export const useVoterSearchQuery = (
         ...options,
         queryKey: ["voter_search", { type, query }],
         queryFn: async () => {
-            return (
-                await api.get(`/v1/voters/search?type=${type}&query=${query}`)
-            ).data;
+            try {
+                return (
+                    await api.get(
+                        `/v1/voters/search?type=${type}&query=${query}`
+                    )
+                ).data;
+            } catch (error) {
+                throw parseErrorMessage(error as AxiosError);
+            }
         },
     });
 
