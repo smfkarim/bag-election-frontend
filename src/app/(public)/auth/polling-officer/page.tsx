@@ -2,7 +2,7 @@
 import CenterWrapper from "@/components/layout/center-wrapper";
 import PaperWrapper from "@/components/layout/paper-wrapper";
 import useAuth from "@/hooks/useAuth";
-import { Button, PasswordInput, TextInput } from "@mantine/core";
+import { Button, Group, PasswordInput, TextInput } from "@mantine/core";
 import { useForm } from "@mantine/form";
 import { notifications } from "@mantine/notifications";
 import { signIn } from "next-auth/react";
@@ -13,16 +13,20 @@ import { MdLogin } from "react-icons/md";
 
 export default function PollingAgentLogin() {
     const [loading, setLoading] = useState(false);
+    const [otpRequired, setOtpRequired] = useState(false);
+    const [resendTimer, setResendTimer] = useState(0);
     const router = useRouter();
     const { isAuthenticated, role } = useAuth();
     const form = useForm({
         initialValues: {
             email: "",
             password: "",
+            otp: "",
         },
         validate: {
             email: (_email) => !_email && "Email is required",
             password: (_password) => !_password && "Password is required",
+            otp: (_otp) => otpRequired && !_otp && "OTP is required",
         },
         validateInputOnBlur: true,
     });
@@ -33,11 +37,50 @@ export default function PollingAgentLogin() {
             const res = await signIn("credentials", {
                 email: values.email,
                 password: values.password,
+                otp: values.otp,
                 redirect: false,
             });
 
             if (res?.ok) {
                 router.push("/polling-officer");
+            } else {
+                if (res?.error === "OTP_REQUIRED") {
+                    setOtpRequired(true);
+                    setResendTimer(60);
+                    notifications.show({
+                        color: "blue",
+                        title: "OTP Sent",
+                        message: "Please check your email for OTP",
+                    });
+                } else {
+                    notifications.show({
+                        color: "red",
+                        title: "Failed",
+                        message: JSON.stringify(res?.error),
+                    });
+                }
+            }
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleResendOtp = async () => {
+        try {
+            setLoading(true);
+            const res = await signIn("credentials", {
+                email: form.values.email,
+                password: form.values.password,
+                redirect: false,
+            });
+
+            if (res?.error === "OTP_REQUIRED") {
+                setResendTimer(60);
+                notifications.show({
+                    color: "blue",
+                    title: "OTP Resent",
+                    message: "Please check your email for the new OTP",
+                });
             } else {
                 notifications.show({
                     color: "red",
@@ -49,6 +92,16 @@ export default function PollingAgentLogin() {
             setLoading(false);
         }
     };
+
+    useEffect(() => {
+        let interval: NodeJS.Timeout;
+        if (resendTimer > 0) {
+            interval = setInterval(() => {
+                setResendTimer((prev) => prev - 1);
+            }, 1000);
+        }
+        return () => clearInterval(interval);
+    }, [resendTimer]);
 
     useEffect(() => {
         if (isAuthenticated && role === "Poll Officer") {
@@ -77,24 +130,52 @@ export default function PollingAgentLogin() {
                             Polling Agent Login
                         </h1>
                         <div className=" space-y-1 mt-5">
-                            <TextInput
-                                type="email"
-                                label="Email Address"
-                                placeholder="Enter your email"
-                                classNames={{
-                                    input: "placeholder:text-center",
-                                }}
-                                {...form.getInputProps("email")}
-                            />
-                            <PasswordInput
-                                label="Password"
-                                placeholder="Password"
-                                classNames={{
-                                    innerInput:
-                                        "placeholder:text-center placeholder:mt-10",
-                                }}
-                                {...form.getInputProps("password")}
-                            />
+                            {!otpRequired ? (
+                                <>
+                                    <TextInput
+                                        type="email"
+                                        label="Email Address"
+                                        placeholder="Enter your email"
+                                        classNames={{
+                                            input: "placeholder:text-center",
+                                        }}
+                                        {...form.getInputProps("email")}
+                                    />
+                                    <PasswordInput
+                                        label="Password"
+                                        placeholder="Password"
+                                        classNames={{
+                                            innerInput:
+                                                "placeholder:text-center placeholder:mt-10",
+                                        }}
+                                        {...form.getInputProps("password")}
+                                    />
+                                </>
+                            ) : (
+
+                                <>
+                                    <TextInput
+                                        label="Enter OTP"
+                                        placeholder="Enter OTP"
+                                        classNames={{
+                                            input: "placeholder:text-center",
+                                        }}
+                                        {...form.getInputProps("otp")}
+                                    />
+                                    <Group justify="flex-end">
+                                        <Button
+                                            variant="subtle"
+                                            size="xs"
+                                            onClick={handleResendOtp}
+                                            disabled={resendTimer > 0 || loading}
+                                        >
+                                            {resendTimer > 0
+                                                ? `Resend in ${resendTimer}s`
+                                                : "Resend OTP"}
+                                        </Button>
+                                    </Group>
+                                </>
+                            )}
                             <Button
                                 type="submit"
                                 fullWidth

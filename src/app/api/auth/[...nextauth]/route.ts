@@ -14,21 +14,33 @@ export const authOptions: NextAuthOptions = {
             credentials: {
                 email: { label: "Email", type: "text" },
                 password: { label: "Password", type: "password" },
+                otp: { label: "OTP", type: "text" },
             },
             async authorize(credentials) {
                 if (!credentials) return null;
-                const res = await fetch(
-                    `${process.env.NEXT_PUBLIC_API_URL}/v1/user/login`,
+                const otpRequired = !!credentials.otp;
+                
+                       const res = await fetch(
+                    `${process.env.NEXT_PUBLIC_ADMIN_API_URL}/v1/user/${otpRequired ? "verify-otp" : "login"}`,
                     {
                         method: "POST",
                         headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({
-                            email: credentials.email,
-                            password: credentials.password,
-                        }),
+                        body: JSON.stringify({ email: credentials.email, [otpRequired ? "otp" : "password"]: credentials[otpRequired ? "otp" : "password" ] }),
                     }
-                );
+                )
+
+                console.log(res,"RES")
                 const data = await res.json();
+
+             
+
+                if (
+                    res.ok &&
+                    data?.message?.includes("OTP sent successfully")
+                ) {
+                    throw new Error("OTP_REQUIRED");
+                }
+
                 if (!res.ok || !data.token) {
                     throw new Error(data?.error ?? "Wrong credentials");
                 }
