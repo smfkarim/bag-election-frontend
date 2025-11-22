@@ -57,7 +57,7 @@ export default function PollingAgentLogin() {
                     notifications.show({
                         color: "red",
                         title: "Failed",
-                        message: JSON.stringify(res?.error),
+                        message: typeof res?.error === "string" ? res?.error : JSON.stringify(res?.error),
                     });
                 }
             }
