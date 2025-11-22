@@ -40,6 +40,7 @@ export default function PollingAgentLogin() {
                 otp: values.otp,
                 redirect: false,
             });
+            console.log(res);
 
             if (res?.ok) {
                 router.push("/polling-officer");
@@ -60,6 +61,8 @@ export default function PollingAgentLogin() {
                     });
                 }
             }
+        }catch(e){
+            console.log(e);
         } finally {
             setLoading(false);
         }
